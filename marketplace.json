@@ -1,0 +1,15 @@
+{
+  "name": "productkit",
+  "description": "A growing collection of Claude plugins for product teams — PMs, designers, engineers, researchers. Strategic thinking partners, not template fillers. Install one or all — each plugin works independently.",
+  "owner": {
+    "name": "ProductKit"
+  },
+  "plugins": [
+    {
+      "name": "strategic-pm",
+      "source": "./plugins/strategic-pm",
+      "description": "Strategic PM co-pilot — PRDs, roadmaps, competitive analysis, user research synthesis, OKRs, GTM planning, stakeholder navigation, and a full AI Product Management Playbook.",
+      "version": "1.0.0"
+    }
+  ]
+}
