@@ -1,16 +1,26 @@
-# 🛠️ ProductKit — Claude Plugins for Product Teams
+# ProductKit — Verified Claude Plugins for Product Teams
 
-**Thinking partners for the people who build products.**
+**Most AI plugins hope they work. ProductKit proves it.**
 
-A growing collection of Claude plugins for PMs, designers, engineers, and researchers. Not template fillers — opinionated co-pilots that challenge your thinking and make your output sharper.
-
-Install one or all. Each plugin works independently, updates automatically, and gets better with community contributions.
+Opinionated Claude plugins for PMs, designers, engineers, and researchers — built with the same eval-driven development practices used by serious AI product teams. Each plugin ships with a behavioral eval harness: an LLM-as-judge test suite that verifies the skill actually changes Claude's behavior, not just that the file parses.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Plugin](https://img.shields.io/badge/Claude-Plugin_Marketplace-blueviolet)](https://claude.com/blog/skills)
 [![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](CHANGELOG.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Behavioral Evals](https://img.shields.io/badge/evals-LLM--as--judge-orange)](evals/README.md)
+[![Behavioral Evals](https://img.shields.io/badge/evals-14%20cases%20passing-brightgreen)](evals/README.md)
+
+---
+
+## What Sets This Apart
+
+Most Claude plugin repos have zero behavioral testing. Their CI proves files parse. That's it.
+
+ProductKit ships a **two-call LLM-as-judge eval harness**: every plugin has a test suite of behavioral cases. A subject call loads the skill and generates a response. A grader call scores the response against falsifiable criteria — "did Claude refuse to write the PRD before asking clarifying questions?" "did it flag the vanity metric?" Each case gets a weighted pass/fail score with a 75% threshold.
+
+14 cases across 2 plugins. Every case you can read, run, and extend.
+
+→ **[How the eval harness works](evals/README.md)**
 
 ---
 
@@ -97,22 +107,31 @@ Audience-First Protocol, Pyramid Principle enforcement, SCQA structuring, Clarit
 
 ---
 
-## Eval Harness
+## Behavioral Eval Harness
 
-ProductKit ships a **behavioral eval harness** — an LLM-as-judge system that verifies skills actually change Claude's behavior, not just that the files exist.
+The existing CI (`validate.yml`) proves plugin files parse and exist. That's table stakes. The eval harness answers the harder question: **does loading this skill actually change what Claude does?**
 
-14 eval cases across 2 plugins. Each case sends a real message to Claude with the skill loaded, then grades the response against falsifiable behavioral criteria. Two-call architecture: subject call (skill as system prompt) + grader call (criterion scoring).
+Each plugin ships with an `evals/<plugin>/cases.json` — a suite of behavioral test cases with falsifiable criteria. The runner makes two API calls per case:
+
+1. **Subject call** — Claude responds with the skill as its system prompt, simulating a real user interaction
+2. **Grader call** — a separate Claude call scores the response against each criterion and returns structured JSON
+
+Example criteria from `strategic-pm`:
+- *"Response does NOT immediately begin writing a PRD"* — passes if the behavior is absent
+- *"Response asks about the underlying problem, user need, or metric"* — passes if the behavior is present
+- *"Questions are batched rather than asked one at a time"* — weighted 2, critical criteria weighted 3
 
 **Run locally:**
 ```bash
 pip install anthropic
 export ANTHROPIC_API_KEY=sk-ant-...
 python scripts/run_evals.py
+# or: --plugin strategic-pm  --output json  --model claude-haiku-4-5-20251001
 ```
 
 **Run in CI:** Actions → Behavioral Eval → Run workflow (manual trigger — ~$1–2/run at Opus pricing).
 
-→ [Full methodology and case schema](evals/README.md)
+→ [Full methodology, schema, and how to add cases](evals/README.md)
 
 ---
 
