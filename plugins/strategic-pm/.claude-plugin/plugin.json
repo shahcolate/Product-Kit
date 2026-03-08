@@ -1,0 +1,11 @@
+{
+  "name": "strategic-pm",
+  "version": "1.0.0",
+  "description": "Opinionated PM co-pilot for PRDs, roadmaps, competitive analysis, and AI product strategy.",
+  "skills": [
+    {
+      "name": "strategic-pm",
+      "path": "./skills/strategic-pm/SKILL.md"
+    }
+  ]
+}

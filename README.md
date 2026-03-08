@@ -35,7 +35,7 @@ Open your terminal and run these commands inside Claude Code:
 
 **Step 1: Add the marketplace**
 ```bash
-/plugin marketplace add YOUR_GITHUB_USERNAME/productkit
+/plugin marketplace add shahcolate/productkit
 ```
 This clones the repo locally. You only do this once.
 
@@ -59,7 +59,7 @@ That's it. Claude will automatically load Strategic PM whenever you're doing pro
 
 ### Claude.ai (manual upload)
 
-1. Download the latest ZIP from the [Releases page](../../releases)
+1. Download the latest ZIP from the [Releases page](https://github.com/shahcolate/productkit/releases)
 2. Go to **Settings → Capabilities → Skills**
 3. Click **"Upload skill"** and upload the ZIP
 4. Claude auto-loads it whenever the relevant work is detected
@@ -359,7 +359,7 @@ Future plugins go under `plugins/`. Each is self-contained.
 | 💡 Exploring | **Research Ops** | Researchers, PMs | Automated user research synthesis with web search |
 | 💡 Exploring | **Jira/Linear Bridge** | PMs, Eng | Roadmap-to-ticket workflows via MCP |
 
-Have a plugin idea? [Open an issue](../../issues) or read [CONTRIBUTING.md](CONTRIBUTING.md) to propose one.
+Have a plugin idea? [Open an issue](https://github.com/shahcolate/productkit/issues) or read [CONTRIBUTING.md](CONTRIBUTING.md) to propose one.
 
 ---
 
@@ -396,7 +396,7 @@ A: Yes. Organization Owners can provision skills centrally. One upload covers yo
 A: Yes — that's the point. See [CONTRIBUTING.md](CONTRIBUTING.md) for the plugin proposal process.
 
 **Q: Something isn't working right.**
-A: [Open an issue](../../issues) with what you asked Claude and what went wrong. Include the output if possible.
+A: [Open an issue](https://github.com/shahcolate/productkit/issues) with what you asked Claude and what went wrong. Include the output if possible.
 
 ---
 

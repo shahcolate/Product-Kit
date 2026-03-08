@@ -2,6 +2,13 @@
 
 All notable changes to ProductKit will be documented in this file.
 
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [Unreleased]
+
+<!-- Add entries here as you work. Move to a version section when releasing. -->
+<!-- Use these subsections: Added, Changed, Deprecated, Removed, Fixed, Security -->
+
 ## [1.0.0] - 2026-02-26
 
 ### Added — Strategic PM Plugin
