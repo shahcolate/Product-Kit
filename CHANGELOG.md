@@ -6,6 +6,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-08
+
+### Added — AI Product Teardown Tool
+- `scripts/teardown.py` — CLI tool that runs any product through Strategic PM's full framework battery
+- 6-dimension analysis: JTBD & Value Prop, Competitive Moat (7 Powers), Growth Model, Anti-Pattern Scan (all 13), Monetization, Strategic Verdict
+- Multi-call architecture: each dimension gets its own focused API call with Strategic PM as system prompt for higher-quality output
+- Terminal output with box-drawing formatting (screenshot-ready) and Markdown output for sharing
+- `--save` flag writes reports to `teardowns/` directory
+- `--context` flag for adding product context (helps with obscure products)
+- `--model` flag for model selection (defaults to claude-sonnet-4-6)
+- `teardowns/` directory with `.gitkeep`; generated reports gitignored
+
+### Changed — README
+- Added AI Product Teardown Tool section with usage examples
+- Repo structure diagram updated to include `teardown.py` and `teardowns/`
+- Version badge updated to 1.3.0
+
 ## [1.2.0] - 2026-03-08
 
 ### Added — Behavioral Eval Harness

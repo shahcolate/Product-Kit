@@ -6,7 +6,7 @@ Opinionated Claude plugins for PMs, designers, engineers, and researchers — bu
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Plugin](https://img.shields.io/badge/Claude-Plugin_Marketplace-blueviolet)](https://claude.com/blog/skills)
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.0-green.svg)](CHANGELOG.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Behavioral Evals](https://img.shields.io/badge/evals-14%20cases%20passing-brightgreen)](evals/README.md)
 
@@ -135,6 +135,21 @@ python scripts/run_evals.py
 
 ---
 
+## AI Product Teardown Tool
+
+Run any product through Strategic PM's full framework battery and get a structured teardown across 6 dimensions: JTBD & Value Prop, Competitive Moat (7 Powers), Growth Model, Anti-Pattern Scan (all 13), Monetization, and Strategic Verdict.
+
+```bash
+pip install anthropic
+export ANTHROPIC_API_KEY=sk-ant-...
+python scripts/teardown.py "Notion"
+python scripts/teardown.py "Linear" --output markdown --save
+```
+
+Each dimension gets its own focused API call with Strategic PM as the system prompt — producing higher-quality, framework-specific analysis than a single massive prompt. Outputs are screenshot-ready for sharing.
+
+---
+
 ## Repo Structure
 
 ```
@@ -168,7 +183,9 @@ productkit/
 │   └── product-writing-studio/
 │       └── cases.json                     # 7 behavioral eval cases
 ├── scripts/
-│   └── run_evals.py                       # Eval runner (LLM-as-judge harness)
+│   ├── run_evals.py                       # Eval runner (LLM-as-judge harness)
+│   └── teardown.py                        # AI Product Teardown CLI tool
+├── teardowns/                             # Saved teardown reports (gitignored)
 └── releases/
     ├── strategic-pm-v1.0.0.zip            # For Claude.ai manual upload
     └── product-writing-studio-v1.1.0.zip  # For Claude.ai manual upload
