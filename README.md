@@ -121,8 +121,10 @@ Example criteria from `strategic-pm`:
 - *"Response asks about the underlying problem, user need, or metric"* — passes if the behavior is present
 - *"Questions are batched rather than asked one at a time"* — weighted 2, critical criteria weighted 3
 
-**Run locally:**
+**Run locally:** This is a standalone CLI tool that calls the Anthropic API directly — not a Claude plugin. Clone the repo and run it with your own API key:
 ```bash
+git clone https://github.com/shahcolate/Product-Kit.git
+cd Product-Kit
 pip install anthropic
 export ANTHROPIC_API_KEY=sk-ant-...
 python scripts/run_evals.py
@@ -139,7 +141,11 @@ python scripts/run_evals.py
 
 Run any product through Strategic PM's full framework battery and get a structured teardown across 6 dimensions: JTBD & Value Prop, Competitive Moat (7 Powers), Growth Model, Anti-Pattern Scan (all 13), Monetization, and Strategic Verdict.
 
+This is a standalone CLI tool that calls the Anthropic API directly — not a Claude plugin. Clone the repo and run it with your own API key:
+
 ```bash
+git clone https://github.com/shahcolate/Product-Kit.git
+cd Product-Kit
 pip install anthropic
 export ANTHROPIC_API_KEY=sk-ant-...
 python scripts/teardown.py "Notion"
