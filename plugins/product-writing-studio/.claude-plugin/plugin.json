@@ -1,0 +1,11 @@
+{
+  "name": "product-writing-studio",
+  "description": "Expert product communicator for Claude — exec updates, strategy memos, board decks, stakeholder emails, product announcements, and launch comms. Audience-first, pyramid-principle driven, anti-jargon. Knows the structure, audience, and purpose of every product writing format.",
+  "version": "1.1.0",
+  "skills": [
+    {
+      "name": "product-writing-studio",
+      "path": "./skills/product-writing-studio/SKILL.md"
+    }
+  ]
+}

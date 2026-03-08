@@ -6,8 +6,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-<!-- Add entries here as you work. Move to a version section when releasing. -->
-<!-- Use these subsections: Added, Changed, Deprecated, Removed, Fixed, Security -->
+### Added — Product Writing Studio Plugin (v1.1.0)
+- New plugin: Product Writing Studio — expert product communicator for Claude
+- Audience-First Protocol: identifies reader, context level, and decision/feeling goal before writing
+- Pyramid Principle enforcement: recommendation leads, support follows; buried ledes flagged and restructured
+- SCQA Structure (Situation → Complication → Question → Answer) for all strategic writing
+- Five Clarity Laws: jargon check, passive voice check, sentence length check, reading time estimate, "So What?" on data
+- Anti-Pattern Detection: buried lede, walls of text, false urgency, defensive hedging, jargon overuse, metric theater, accomplishment lists, missing asks
+- Document Type Intelligence for 8 formats: exec updates, strategy memos, board deck narratives, stakeholder emails, product announcements, one-pagers, design briefs, launch comms
+- Draft review mode: structural critique + tracked rewrites with reasoning
+- `plugins/product-writing-studio/README.md` — full plugin deep-dive and install guide
+
+### Changed — README restructure
+- Root README.md slimmed to a clean marketplace index
+- Strategic PM and Product Writing Studio plugin deep-dives moved to per-plugin READMEs
+- `plugins/strategic-pm/README.md` created — full plugin detail, standalone readable
+- Repo structure diagram updated to reflect per-plugin README pattern
+- Available Plugins table and Marketplace Roadmap updated with links and new statuses
+- Version badge updated to 1.1.0
 
 ## [1.0.0] - 2026-02-26
 

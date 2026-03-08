@@ -10,6 +10,12 @@
       "source": "./plugins/strategic-pm",
       "description": "Strategic PM co-pilot — PRDs, roadmaps, competitive analysis, user research synthesis, OKRs, GTM planning, stakeholder navigation, and a full AI Product Management Playbook.",
       "version": "1.0.0"
+    },
+    {
+      "name": "product-writing-studio",
+      "source": "./plugins/product-writing-studio",
+      "description": "Expert product communicator — exec updates, strategy memos, board decks, stakeholder emails, product announcements, one-pagers, design briefs, and launch comms. Audience-first, pyramid-principle driven, anti-jargon.",
+      "version": "1.1.0"
     }
   ]
 }
