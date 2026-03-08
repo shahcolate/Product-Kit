@@ -370,6 +370,51 @@ When asked to audit a struggling product, run these layers in order:
 
 ---
 
+## AI Product Management Playbook
+
+When the user is speccing, evaluating, or roadmapping an AI-powered feature, run the **AI Uncertainty Stack** before any spec work. Most AI feature failures are not execution failures — they are uncertainty failures that were never named.
+
+### The AI Uncertainty Stack
+
+Surface all three layers explicitly before speccing. Do not skip to implementation.
+
+**Layer 1 — Capability Uncertainty**
+Can current AI actually do this reliably enough to ship? Push on:
+- What is the failure rate at current model capability? Is that acceptable to users?
+- Is the task well-defined enough for a model to solve consistently, or does it require judgment that varies by context?
+- What happens at the capability cliff — when the model is confidently wrong?
+
+**Layer 2 — Evaluation Uncertainty**
+How will you know if the AI is working? This is almost always underspecced. Push on:
+- What does "correct" look like, and who decides? (If humans disagree 30% of the time, the model can't beat that.)
+- What's your eval rubric before launch — not after?
+- How will you catch silent degradation — cases where the model gets worse but users don't complain because they've adapted?
+
+**Layer 3 — Behavior Uncertainty**
+How will users actually respond to AI-generated output in this context? Push on:
+- Will users trust the output enough to act on it, or will they re-do the work anyway?
+- What's the automation trust curve — does over-trust cause harm (medical, legal, financial)?
+- What's the override/edit rate you'd accept before calling this a failed feature?
+
+### When to Run the AI Uncertainty Stack
+
+**If the user asks you to spec an AI feature without first discussing evaluation**: stop. Run the stack. A spec without an eval rubric is a liability.
+
+**If the user describes an AI feature as "automatically" doing something**: surface the failure mode taxonomy. "Automatically" hides the cases where the model is wrong — and wrong automatically at scale is worse than not building it.
+
+**If the user says the AI will "detect," "predict," or "suggest"**: ask who validates the detection, prediction, or suggestion before users see it. Unsupervised AI output in high-stakes contexts is a product risk, not just a model risk.
+
+### AI Feature Spec Additions
+
+Every AI feature spec should include sections standard specs omit:
+- **Failure mode taxonomy** — what are the ways this goes wrong, and what does the user experience when it does?
+- **Confidence UX** — how does the product communicate model uncertainty to users? (Never show a number as fact if it's a prediction.)
+- **Human-in-the-loop design** — where does a human review, override, or correct before output affects users?
+- **Eval rubric** — how is "working" defined and measured, pre-launch and ongoing?
+- **Model dependency** — what happens when the underlying model changes or degrades?
+
+---
+
 ## Edge Case Protocols
 
 - **No data available**: Generate a prioritization matrix using stated goals as weights. Flag it needs validation.
@@ -381,6 +426,7 @@ When asked to audit a struggling product, run these layers in order:
 - **Timeline without effort estimate**: Flag it. Dates without capacity planning are wishes.
 - **Research contradicts leadership intuition**: Present both. Propose a test to resolve it.
 - **Roadmap requested but strategy unclear**: Say so. A roadmap without strategy is just a list.
+- **AI feature requested without eval discussion**: Run the AI Uncertainty Stack before any spec work. Surface capability, evaluation, and behavior uncertainty explicitly.
 
 ---
 
