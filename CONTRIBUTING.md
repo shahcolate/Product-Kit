@@ -38,12 +38,13 @@ This is the most common and most valuable contribution.
 1. **Fork** this repo
 2. **Create a branch** with a descriptive name (`git checkout -b add-wardley-mapping-protocol`)
 3. **Edit the SKILL.md** for the relevant plugin (e.g., `plugins/strategic-pm/skills/strategic-pm/SKILL.md`)
-4. **Update CHANGELOG.md** with a brief description under an `[Unreleased]` section
-5. **Submit a PR** with:
+4. **Add or update eval cases** — if your change introduces a new behavior, add a case to `evals/<plugin>/cases.json` that verifies it. If you're fixing a bug (Claude wasn't doing X), add a case that would have caught it. See [Writing Eval Cases](#4-writing-eval-cases) below.
+5. **Update CHANGELOG.md** with a brief description under an `[Unreleased]` section
+6. **Submit a PR** with:
    - **What you changed** — the specific section added or modified
    - **Why it matters** — what scenario this addresses
    - **How you've used it** — even a sentence about real-world application helps reviewers
-   - **Testing notes** — if you tested the change with Claude, share what you asked and what Claude did differently
+   - **Testing notes** — what you asked Claude and what it did differently with your change applied
 
 ### Style guide for skill instructions
 
@@ -170,18 +171,162 @@ After the frontmatter, write the skill instructions in Markdown. Refer to the St
 - **At least 3 distinct behavioral changes.** A plugin should change how Claude acts in multiple ways — not just apply a single framework.
 - **Clear trigger boundaries.** The skill description must make it obvious when this plugin activates vs. when other ProductKit plugins handle it.
 - **No overlap with existing plugins.** If your plugin covers territory another plugin already handles, propose it as an improvement instead.
+- **Eval cases required.** Submit at least 5 eval cases in `evals/your-plugin-name/cases.json`. Cases must cover your plugin's core behavioral claims — not edge cases or nice-to-haves, but the behaviors that define why the plugin exists. See [Writing Eval Cases](#4-writing-eval-cases).
 - **Tested with Claude.** Before submitting, use your plugin with Claude on at least 3 real tasks. Include the test results in your PR.
 
 #### Submitting a new plugin
 
 1. Fork the repo
 2. Create your plugin directory under `plugins/`
-3. Add your plugin to `marketplace.json` in the `plugins` array
-4. Add a section to CHANGELOG.md
-5. Submit a PR with:
+3. Create `evals/your-plugin-name/cases.json` with at least 5 behavioral eval cases
+4. Add your plugin to `marketplace.json` in the `plugins` array
+5. Add a section to CHANGELOG.md
+6. Submit a PR with:
    - Link to the approved proposal issue
    - The 3+ test conversations you ran with Claude
    - A brief entry for the README's plugin table
+
+---
+
+## 4. Writing Eval Cases
+
+Every behavioral claim in a plugin needs an eval case to back it up. This is how we verify that plugins do what they say — and catch regressions when skill instructions change.
+
+The eval harness uses a two-call LLM-as-judge architecture: a subject call loads the skill and generates a response, a grader call scores the response against your criteria. You write the criteria; the runner handles the rest.
+
+→ **[Full methodology and how to run evals](evals/README.md)**
+
+### The one-sentence principle
+
+**Write criteria as observable, falsifiable behavioral statements — not intentions.**
+
+❌ "Response is helpful and PM-focused" — not falsifiable
+❌ "Response follows the skill guidelines" — too vague
+✅ "Response does NOT immediately begin writing a PRD"
+✅ "Response asks about the underlying problem, user need, or metric"
+✅ "Response assigns an explicit confidence tier to its recommendation"
+
+### Case structure
+
+```json
+{
+  "id": "xyz-001",
+  "name": "Human-readable case name",
+  "category": "category-slug",
+  "user_message": "The message sent to Claude with the skill loaded",
+  "context": "Optional — prepended to the user turn. Use for doc reviews, background, etc. Or null.",
+  "criteria": [
+    {
+      "id": "xyz-001-c1",
+      "description": "Observable behavioral statement",
+      "should_pass": true,
+      "weight": 3
+    }
+  ]
+}
+```
+
+### `should_pass: false` — testing anti-patterns
+
+This is how you verify Claude does NOT do something. Set `should_pass: false` on the criterion and the grader will score it as passing when the behavior is absent.
+
+Example — testing that the Reverse Brief fires before PRD writing:
+
+```json
+{
+  "id": "xyz-001-c1",
+  "description": "Response does NOT immediately begin writing a PRD or producing PRD sections",
+  "should_pass": false,
+  "weight": 3
+}
+```
+
+The grader prompt will read: *"This criterion PASSES if the behavior is NOT present in the response."* No inversion logic needed in the runner — `passed: true` always means the criterion was satisfied.
+
+### Choosing weights
+
+Weights are relative importance within a case. The case passes if the weighted score is ≥ 75%.
+
+| Weight | Use for |
+|---|---|
+| 3 | Core behavioral claim — the reason the case exists |
+| 2 | Supporting behavior — important but not the main point |
+| 1 | Nice-to-have signal — worth measuring but not blocking |
+
+Most criteria should be 2 or 3. A case with all weight-1 criteria is probably testing the wrong things.
+
+### Anatomy of a good case
+
+A good eval case has:
+
+1. **One clear trigger** — the user message puts Claude in a specific situation the plugin claims to handle
+2. **A blocking criterion** (`should_pass: false`, weight 3) — verifies Claude doesn't do the bad thing
+3. **One or two positive criteria** — verifies Claude does the right thing instead
+4. **Specific, not vague language** — "asks about the underlying problem or metric" not "asks a clarifying question"
+
+Example — a complete case for the Confidence Label law:
+
+```json
+{
+  "id": "spm-006",
+  "name": "Confidence labeling on recommendation",
+  "category": "confidence-labeling",
+  "user_message": "What pricing model should we use?",
+  "context": "We have 12 design partner interviews, no pricing research, and are pre-revenue. The product is a workflow automation tool for operations teams.",
+  "criteria": [
+    {
+      "id": "spm-006-c1",
+      "description": "Assigns an explicit confidence tier or label to its recommendation (e.g., low confidence, 🔴, or equivalent)",
+      "should_pass": true,
+      "weight": 3
+    },
+    {
+      "id": "spm-006-c2",
+      "description": "States what evidence is missing or what validation is needed before higher confidence",
+      "should_pass": true,
+      "weight": 3
+    },
+    {
+      "id": "spm-006-c3",
+      "description": "Does NOT give a confident, unqualified recommendation without acknowledging limited pricing research",
+      "should_pass": false,
+      "weight": 2
+    }
+  ]
+}
+```
+
+### What makes a case worth adding
+
+A new case is worth adding when:
+
+- **You're adding a new behavior to a skill** — write a case that would fail before your change and pass after
+- **You're fixing a bug** — the bug should have been caught by an eval; add the case that would catch it in the future
+- **A behavior is load-bearing** — the plugin's core value proposition depends on it; it needs verification
+
+A new case is NOT worth adding when:
+
+- It tests the same behavior as an existing case from a slightly different angle
+- The criterion is so generic it would pass for any well-written response
+- You're testing Claude's general capability, not the plugin's specific behavioral claims
+
+### Running your cases
+
+```bash
+pip install anthropic
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Test just your new plugin
+python scripts/run_evals.py --plugin your-plugin-name
+
+# Cheaper during development
+python scripts/run_evals.py --plugin your-plugin-name --model claude-haiku-4-5-20251001
+
+# See full grader reasoning
+python scripts/run_evals.py --plugin your-plugin-name --output json | jq '.["your-plugin-name"][].criteria'
+```
+
+Include the terminal output in your PR so reviewers can see which cases pass.
 
 ---
 
