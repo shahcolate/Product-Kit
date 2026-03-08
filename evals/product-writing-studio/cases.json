@@ -1,0 +1,214 @@
+{
+  "plugin": "product-writing-studio",
+  "skill_path": "plugins/product-writing-studio/skills/product-writing-studio/SKILL.md",
+  "version": "1.1.0",
+  "cases": [
+    {
+      "id": "pws-001",
+      "name": "Audience-First on exec update request",
+      "category": "audience-first",
+      "user_message": "Write me an executive update on Q2 product progress.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pws-001-c1",
+          "description": "Does NOT write an exec update without first identifying the audience",
+          "should_pass": false,
+          "weight": 3
+        },
+        {
+          "id": "pws-001-c2",
+          "description": "Asks who will read this — the specific reader or audience (e.g., CEO, board, cross-functional leadership)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-001-c3",
+          "description": "Asks what decision, action, or feeling the reader needs to walk away with",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-001-c4",
+          "description": "Asks about the reader's context level — what they already know about Q2 progress",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-002",
+      "name": "Buried lede detection in draft",
+      "category": "buried-lede",
+      "user_message": "Please review this memo.",
+      "context": "DRAFT STRATEGY MEMO\n\nBackground and Context\nOver the past six months, our product team has conducted extensive market research across 14 enterprise accounts. We interviewed procurement leads, end users, and executive sponsors in industries including financial services, healthcare, and logistics. The research surfaced consistent themes around workflow complexity, integration overhead, and change management friction during software adoption.\n\nResearch Findings\nAcross all accounts, we found that the primary barrier to adoption is not feature parity but rather the time required to integrate new tools into existing workflows. Specifically, 11 of 14 accounts cited integration time as their top concern. Secondary concerns included training burden (8/14) and support availability (6/14). Notably, pricing was ranked last in 10 of 14 accounts — suggesting that price sensitivity is lower than previously assumed.\n\nMarket Context\nThe competitive landscape has shifted meaningfully in the past year. Two of our three primary competitors have moved upmarket toward larger enterprise deals, leaving mid-market (200-2,000 seat) accounts underserved. Our current positioning and pricing structure aligns well with this segment. No competitor currently offers a dedicated onboarding concierge for mid-market — a gap our customer success team has anecdotally noted as a recurring objection handler.\n\nRecommendation\nWe should launch a Mid-Market Accelerator Package — a bundled offering combining streamlined integration tooling, a 30-day onboarding concierge, and a dedicated success manager for the first 90 days. Based on our research, this directly addresses the top adoption barrier while exploiting a competitive gap. We recommend a Q3 launch with 3 design partners, moving to GA in Q4.\n\nImplementation Considerations\nLaunch will require coordination across product, customer success, and sales engineering. Estimated lift: 6 weeks of product work, 2 new CS hires, and a pricing adjustment for the bundle. The Q3 design partner phase will let us validate the onboarding time reduction before investing in the full rollout.",
+      "criteria": [
+        {
+          "id": "pws-002-c1",
+          "description": "Identifies that the recommendation or key insight is buried — appears late in the document after multiple paragraphs of background and research",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-002-c2",
+          "description": "Specifically notes that the recommendation appears in the fourth section or late in the document, not at the opening",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-002-c3",
+          "description": "Proposes restructuring the memo to lead with the recommendation (Pyramid Principle / SCQA Answer-first)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-002-c4",
+          "description": "Does NOT simply praise the memo or offer only cosmetic edits without flagging the buried lede structural problem",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-003",
+      "name": "Jargon flagging",
+      "category": "jargon",
+      "user_message": "Review this paragraph for clarity.",
+      "context": "We are continuing to leverage synergistic alignment across our go-to-market and product functions to drive holistic engagement with our key stakeholder ecosystem. By proactively operationalizing our core competencies and scaling our value-add touchpoints, we are well-positioned to accelerate transformative outcomes for our strategic partners.",
+      "criteria": [
+        {
+          "id": "pws-003-c1",
+          "description": "Flags the jargon — specifically identifies phrases like 'leverage synergistic alignment', 'holistic engagement', 'operationalizing core competencies', or equivalent empty business-speak as problematic",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-003-c2",
+          "description": "Rewrites or offers a plain-language alternative that replaces the jargon with specific, concrete language",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-003-c3",
+          "description": "Does NOT approve the paragraph as clear or suggest only minor edits without flagging the pervasive jargon problem",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-004",
+      "name": "SCQA structure for strategy memo",
+      "category": "scqa",
+      "user_message": "I need to write a strategy memo recommending we discontinue our legacy product line and focus entirely on our new platform. Help me structure this.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pws-004-c1",
+          "description": "Applies or recommends SCQA structure explicitly — references Situation, Complication, Question, and Answer as the organizing framework",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-004-c2",
+          "description": "Structures the memo to lead with the recommendation (Answer/conclusion) rather than saving it for the end",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-004-c3",
+          "description": "Does NOT produce or suggest a memo structure that buries the recommendation in the conclusion after extended background",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-005",
+      "name": "So What on raw metrics",
+      "category": "so-what-data",
+      "user_message": "Here are our Q2 metrics. What do you think?",
+      "context": "Q2 Metrics Summary:\n- Engagement is up 23% quarter-over-quarter\n- DAUs increased from 12,000 to 14,760\n- Session length grew by 18%\n- Feature adoption for the new export tool is at 34%\n- Support ticket volume decreased by 11%",
+      "criteria": [
+        {
+          "id": "pws-005-c1",
+          "description": "Flags that the metrics lack implications — they are raw numbers without a 'so what' or business interpretation connecting them to decisions or outcomes",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-005-c2",
+          "description": "Offers or models at least one rewrite that connects a metric to its business implication (e.g., 'DAUs up 23% means X, which suggests Y')",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-005-c3",
+          "description": "Does NOT simply validate the metrics as a strong or complete update without asking what they mean or imply",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-006",
+      "name": "Missing ask detection",
+      "category": "missing-ask",
+      "user_message": "Can you review this stakeholder email before I send it?",
+      "context": "Subject: Q2 Product Update\n\nHi team,\n\nWanted to share a quick update on where things stand with the product.\n\nWe shipped the new onboarding flow last week. Early numbers look promising — completion rate is up about 15% compared to the old flow. The team worked really hard on this and I'm proud of what we shipped.\n\nWe also completed the data migration for all legacy accounts. There were a few bumps along the way but everything resolved cleanly. No customer-facing incidents.\n\nLooking ahead to Q3, we're planning to focus on the reporting module and enterprise SSO. Both have been on the roadmap for a while and we have strong customer demand signals for both.\n\nThanks for everything you all do. It's been a strong quarter.\n\nBest,\nAlex",
+      "criteria": [
+        {
+          "id": "pws-006-c1",
+          "description": "Identifies that the email has no clear ask, request, or next action — the reader has no specific thing they need to do or decide",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-006-c2",
+          "description": "Asks the writer what they need from the reader — what action, decision, or response they want",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-006-c3",
+          "description": "Does NOT suggest only cosmetic or stylistic edits without flagging the missing ask as a structural problem",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-007",
+      "name": "Reading time mismatch flag",
+      "category": "reading-time",
+      "user_message": "Here's my 90-second exec update. Can you polish it up?",
+      "context": "Q2 Product & Engineering Executive Update\n\nOverview\nQ2 was a strong execution quarter for product and engineering. We shipped four major milestones, resolved our most critical technical debt items, and expanded the team with three senior hires. Customer satisfaction scores improved meaningfully and we're entering Q3 with a clean backlog and clear priorities.\n\nFeature Launches\nWe shipped the redesigned onboarding flow in early May, which reduced time-to-value from 11 days to 4.3 days on average. The new reporting module launched in late June after two weeks of beta with design partners — initial feedback has been overwhelmingly positive. We also shipped SSO for enterprise accounts, closing a top-3 sales blocker that had been on the roadmap for 18 months. Finally, the mobile push notification system went live in June, expanding our re-engagement surface for the first time.\n\nTeam Updates\nWe onboarded a Staff Engineer (infrastructure), a Senior PM (growth), and a Senior Designer (platform). All three are fully ramped. We also promoted two engineers to senior roles internally — a reflection of the mentorship investment we made in H1.\n\nRisks and Mitigations\nOur biggest risk heading into Q3 is capacity. We have 14 projects on the roadmap and 9 engineers. We are actively triaging with the exec team to align on the top 6 priorities. Secondary risk: our data pipeline latency has increased 40% over the past 90 days due to data volume growth. The infrastructure team has a fix scoped for July.\n\nKey Metrics\nDAUs: 14,760 (up 23% QoQ). Session length: up 18%. Feature adoption (reporting module): 34% within 30 days of launch. Support ticket volume: down 11%. NPS: 47 (up from 41 in Q1).\n\nQ3 Preview\nTop priorities: (1) AI-powered workflow suggestions, (2) enterprise admin console, (3) data pipeline stability, (4) mobile feature parity. Stretch goal: international payments support.\n\nConclusion\nQ2 was a strong quarter. We're well-positioned for Q3 with a clear roadmap, a stronger team, and improved infrastructure. The main challenge ahead is prioritization under capacity constraints — something we're aligned on resolving in the next two weeks.",
+      "criteria": [
+        {
+          "id": "pws-007-c1",
+          "description": "Flags that the document is significantly longer than a 90-second read — the actual reading time is 2.5 to 4 minutes for a document of this length",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-007-c2",
+          "description": "Estimates or mentions the actual reading time of the document (approximately 2-4 minutes, or notes the word count implies more than 90 seconds)",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-007-c3",
+          "description": "Suggests compressing, cutting, or restructuring the document to actually meet the 90-second read target",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-007-c4",
+          "description": "Does NOT polish or refine the document without flagging the reading time mismatch",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

@@ -6,6 +6,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added — Behavioral Eval Harness
+- LLM-as-judge eval harness for automated behavioral verification of plugin skills
+- Two-call architecture: subject call (skill as system prompt) + grader call (per-criterion scoring)
+- `evals/strategic-pm/cases.json` — 7 behavioral eval cases covering reverse-brief, anti-pattern detection, devil's advocate, who-loses rule, JTBD reframing, confidence labeling, and AI uncertainty stack
+- `evals/product-writing-studio/cases.json` — 7 behavioral eval cases covering audience-first, buried lede detection, jargon flagging, SCQA structure, so-what on data, missing ask detection, and reading time mismatch
+- `scripts/run_evals.py` — eval runner with `--plugin`, `--output json`, and `--model` flags; exits 1 on any case below 75% weighted threshold
+- `.github/workflows/eval.yml` — manual-trigger CI workflow writing results to GitHub Actions Job Summary
+- `evals/README.md` — full methodology doc: architecture, schema reference, how to run, how to add cases, cost, limitations
+- Version drift warning: runner prints a warning when `cases.json` version doesn't match `plugin.json` version
+
 ### Added — Product Writing Studio Plugin (v1.1.0)
 - New plugin: Product Writing Studio — expert product communicator for Claude
 - Audience-First Protocol: identifies reader, context level, and decision/feeling goal before writing

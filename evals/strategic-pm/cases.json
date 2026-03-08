@@ -1,0 +1,214 @@
+{
+  "plugin": "strategic-pm",
+  "skill_path": "plugins/strategic-pm/skills/strategic-pm/SKILL.md",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "spm-001",
+      "name": "Reverse Brief trigger on PRD request",
+      "category": "reverse-brief",
+      "user_message": "Write me a PRD for dark mode.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-001-c1",
+          "description": "Response does NOT immediately begin writing a PRD or producing PRD sections",
+          "should_pass": false,
+          "weight": 3
+        },
+        {
+          "id": "spm-001-c2",
+          "description": "Response asks about the underlying problem, user need, or metric this is meant to move",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-001-c3",
+          "description": "Questions are batched (multiple at once) rather than asked one at a time",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "spm-001-c4",
+          "description": "Response states best-guess assumptions before asking, so the user corrects rather than answers from scratch",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-002",
+      "name": "Vanity metric anti-pattern detection",
+      "category": "anti-pattern",
+      "user_message": "Our app hit 50,000 downloads last month. How should we use this as the north star metric for our Q2 planning?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-002-c1",
+          "description": "Flags downloads as a vanity metric — a metric that looks good but does not indicate user value or business health",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-002-c2",
+          "description": "Proposes or recommends an outcome or behavior metric as a better north star (e.g., activation rate, retained users, engagement depth)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-002-c3",
+          "description": "Does NOT validate downloads as a suitable north star metric without challenge",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-003",
+      "name": "Devil's Advocate on pivot decision",
+      "category": "devils-advocate",
+      "user_message": "We've decided to pivot from a B2C freemium model to enterprise sales. I want to start planning the transition roadmap.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-003-c1",
+          "description": "Steelmans the pivot — acknowledges a legitimate rationale for moving to enterprise sales before critiquing",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "spm-003-c2",
+          "description": "Surfaces at least two specific failure modes or risks associated with a B2C-to-enterprise pivot (e.g., longer sales cycles, product-market fit reset, team capability gaps, cost of sales)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-003-c3",
+          "description": "Offers escape hatches, reversibility considerations, or stress-test questions before committing to the roadmap",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "spm-003-c4",
+          "description": "Does NOT immediately begin planning the transition roadmap without first applying critical scrutiny to the decision",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-004",
+      "name": "Who Loses rule on feature decision",
+      "category": "who-loses",
+      "user_message": "We're going to add AI-generated summaries to every user's dashboard. This will save time for everyone.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-004-c1",
+          "description": "Names at least one specific group, persona, or user segment who might lose — who bears a cost, sees reduced utility, or is disadvantaged by this change",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-004-c2",
+          "description": "Does NOT accept the claim that AI summaries 'save time for everyone' without challenge",
+          "should_pass": false,
+          "weight": 3
+        },
+        {
+          "id": "spm-004-c3",
+          "description": "Surfaces a tradeoff, asks a clarifying question, or identifies a hidden cost embedded in the 'saves everyone time' framing",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-005",
+      "name": "JTBD reframing of feature request",
+      "category": "jtbd-reframing",
+      "user_message": "We need to build a bulk export feature for our enterprise customers.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-005-c1",
+          "description": "Reframes the request in terms of the user job-to-be-done — what the user is trying to accomplish — rather than treating bulk export as a given solution",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-005-c2",
+          "description": "Does NOT immediately begin speccing out the bulk export feature without questioning the underlying job",
+          "should_pass": false,
+          "weight": 2
+        },
+        {
+          "id": "spm-005-c3",
+          "description": "Asks what customers are trying to do when they need bulk export, or what downstream workflow the export enables",
+          "should_pass": true,
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "id": "spm-006",
+      "name": "Confidence labeling on recommendation",
+      "category": "confidence-labeling",
+      "user_message": "What pricing model should we use?",
+      "context": "We have 12 design partner interviews, no pricing research, and are pre-revenue. The product is a workflow automation tool for operations teams.",
+      "criteria": [
+        {
+          "id": "spm-006-c1",
+          "description": "Assigns an explicit confidence tier, label, or qualifier to its pricing recommendation (e.g., low confidence, hypothesis, 🔴/🟡/🟢, or equivalent signal)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-006-c2",
+          "description": "States what evidence is missing or what specific validation is needed before the recommendation can be made with higher confidence",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-006-c3",
+          "description": "Does NOT give a confident, unqualified pricing recommendation without acknowledging the absence of pricing research",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-007",
+      "name": "AI uncertainty stack on AI feature request",
+      "category": "ai-uncertainty",
+      "user_message": "We want to add an AI feature that automatically detects when a user's workflow is inefficient and suggests optimizations. Can you help me spec this out?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-007-c1",
+          "description": "Surfaces capability uncertainty — questions whether current AI can reliably detect workflow inefficiency, or what would make that detection work",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-007-c2",
+          "description": "Surfaces evaluation uncertainty — raises how we would know if the AI's optimization suggestions are actually good or correct",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-007-c3",
+          "description": "Does NOT immediately begin writing a feature spec without first surfacing AI-specific uncertainties",
+          "should_pass": false,
+          "weight": 2
+        },
+        {
+          "id": "spm-007-c4",
+          "description": "Asks what 'inefficient' means, who defines it, or how ground truth would be established for optimization quality",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

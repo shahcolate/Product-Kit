@@ -10,6 +10,7 @@ Install one or all. Each plugin works independently, updates automatically, and 
 [![Claude Plugin](https://img.shields.io/badge/Claude-Plugin_Marketplace-blueviolet)](https://claude.com/blog/skills)
 [![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](CHANGELOG.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Behavioral Evals](https://img.shields.io/badge/evals-LLM--as--judge-orange)](evals/README.md)
 
 ---
 
@@ -96,6 +97,25 @@ Audience-First Protocol, Pyramid Principle enforcement, SCQA structuring, Clarit
 
 ---
 
+## Eval Harness
+
+ProductKit ships a **behavioral eval harness** — an LLM-as-judge system that verifies skills actually change Claude's behavior, not just that the files exist.
+
+14 eval cases across 2 plugins. Each case sends a real message to Claude with the skill loaded, then grades the response against falsifiable behavioral criteria. Two-call architecture: subject call (skill as system prompt) + grader call (criterion scoring).
+
+**Run locally:**
+```bash
+pip install anthropic
+export ANTHROPIC_API_KEY=sk-ant-...
+python scripts/run_evals.py
+```
+
+**Run in CI:** Actions → Behavioral Eval → Run workflow (manual trigger — ~$1–2/run at Opus pricing).
+
+→ [Full methodology and case schema](evals/README.md)
+
+---
+
 ## Repo Structure
 
 ```
@@ -122,6 +142,14 @@ productkit/
 │       └── skills/
 │           └── product-writing-studio/
 │               └── SKILL.md
+├── evals/
+│   ├── README.md                          # Eval methodology and how to run
+│   ├── strategic-pm/
+│   │   └── cases.json                     # 7 behavioral eval cases
+│   └── product-writing-studio/
+│       └── cases.json                     # 7 behavioral eval cases
+├── scripts/
+│   └── run_evals.py                       # Eval runner (LLM-as-judge harness)
 └── releases/
     ├── strategic-pm-v1.0.0.zip            # For Claude.ai manual upload
     └── product-writing-studio-v1.1.0.zip  # For Claude.ai manual upload
