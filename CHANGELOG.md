@@ -6,6 +6,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-08
+
 ### Added — Behavioral Eval Harness
 - LLM-as-judge eval harness for automated behavioral verification of plugin skills
 - Two-call architecture: subject call (skill as system prompt) + grader call (per-criterion scoring)
@@ -16,7 +18,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `evals/README.md` — full methodology doc: architecture, schema reference, how to run, how to add cases, cost, limitations
 - Version drift warning: runner prints a warning when `cases.json` version doesn't match `plugin.json` version
 
-### Added — Product Writing Studio Plugin (v1.1.0)
+### Changed — README
+- Rewritten hero to lead with eval-driven differentiation: "Most AI plugins hope they work. ProductKit proves it."
+- New "What Sets This Apart" section above the fold explaining the two-call LLM-as-judge architecture
+- Behavioral Evals badge updated to show passing case count
+- Repo structure diagram updated to include `evals/` and `scripts/` directories
+
+## [1.1.0] - 2026-03-08
+
+### Added — Product Writing Studio Plugin
 - New plugin: Product Writing Studio — expert product communicator for Claude
 - Audience-First Protocol: identifies reader, context level, and decision/feeling goal before writing
 - Pyramid Principle enforcement: recommendation leads, support follows; buried ledes flagged and restructured
