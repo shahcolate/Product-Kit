@@ -48,11 +48,11 @@ jobs:
       - name: Check each plugin.json skill path resolves to an existing SKILL.md
         run: |
           find plugins -name "plugin.json" | while read manifest; do
-            dir=$(dirname "$manifest")
+            plugin_root=$(dirname "$(dirname "$manifest")")
             python3 - <<EOF
           import json, os, sys
           manifest = "$manifest"
-          base_dir = "$dir"
+          base_dir = "$plugin_root"
           with open(manifest) as f:
               d = json.load(f)
           for skill in d.get("skills", []):
