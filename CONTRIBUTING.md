@@ -116,7 +116,7 @@ Check the [Marketplace Roadmap](README.md#marketplace-roadmap) in the README. Yo
 
 These are starting points, not prescriptions. Surprise us.
 
-- **UX Strategy** — heuristics evaluation, cognitive load analysis, interaction pattern selection, accessibility audits, design system constraints
+- **UX Strategy** — heuristics evaluation, cognitive load analysis, interaction pattern selection, accessibility audits, design system constraints (next planned plugin)
 - **Research Ops** — interview guide generation, synthesis protocols, survey design, participant screening criteria
 - **Engineering Collaboration** — technical spec reviews, architecture decision records, API design principles, tech debt prioritization
 - **Data & Experimentation** — experiment design rigor, statistical significance checks, metric definition standards, dashboard critique
@@ -163,7 +163,10 @@ description: >
 ---
 ```
 
-After the frontmatter, write the skill instructions in Markdown. Refer to the Strategic PM plugin (`plugins/strategic-pm/skills/strategic-pm/SKILL.md`) as an example of structure and style.
+After the frontmatter, write the skill instructions in Markdown. Refer to the existing plugins as examples of structure and style:
+- `plugins/strategic-pm/skills/strategic-pm/SKILL.md` — comprehensive PM co-pilot (469 lines)
+- `plugins/product-writing-studio/skills/product-writing-studio/SKILL.md` — focused writing coach (307 lines)
+- `plugins/pm-interview-prep/skills/pm-interview-prep/SKILL.md` — interview coaching with mock mode (321 lines)
 
 #### Quality bar for new plugins
 

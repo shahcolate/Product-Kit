@@ -59,6 +59,7 @@ python scripts/run_evals.py
 ```bash
 python scripts/run_evals.py --plugin strategic-pm
 python scripts/run_evals.py --plugin product-writing-studio
+python scripts/run_evals.py --plugin pm-interview-prep
 ```
 
 **Options:**
@@ -67,6 +68,22 @@ python scripts/run_evals.py --output json          # JSON output instead of term
 python scripts/run_evals.py --model claude-haiku-4-5-20251001  # Cheaper model for iteration
 python scripts/run_evals.py --plugin strategic-pm --output json
 ```
+
+**Baseline mode (skill vs vanilla Claude):**
+```bash
+python scripts/run_evals.py --plugin strategic-pm --baseline
+```
+
+Baseline mode runs every eval case twice — once with the skill as system prompt, once with an empty system prompt (vanilla Claude). It shows per-case and overall behavioral lift:
+
+```
+spm-001 · Reverse Brief trigger on PRD request
+  WITH skill:    10/10 (100%) ✅
+  WITHOUT skill:  3/10 (30%)  ❌
+  Skill lift: +70 points
+```
+
+This is the most powerful proof that a skill changes behavior. If vanilla Claude scores similarly, the skill isn't doing enough.
 
 ---
 
@@ -170,7 +187,7 @@ A failing case means the skill's behavioral claim is not reliably being honored 
 
 ## Cost
 
-Each eval case makes 2 API calls (subject + grader). At Opus pricing (~$15/M input, $75/M output), a full 14-case run costs approximately **$1–2**.
+Each eval case makes 2 API calls (subject + grader). At Opus pricing (~$15/M input, $75/M output), a full 30-case run costs approximately **$2–4**.
 
 This is why the workflow is `workflow_dispatch` only — not triggered on every push or PR.
 

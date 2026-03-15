@@ -6,6 +6,45 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-03-15
+
+### Added — PM Interview Prep Plugin
+- New plugin: PM Interview Prep — senior PM interview coach for Claude
+- 321-line SKILL.md covering product sense (JTBD-framed), execution, estimation (structured decomposition), and behavioral (STAR format) question coaching
+- Mock interview mode: Claude plays interviewer, asks follow-ups, then scores on 4-dimension rubric
+- Anti-pattern detection for 6 common interview answer failures (too broad, no metrics, no tradeoffs, solution-first, no user empathy, rambling)
+- Company-type calibration for FAANG, growth-stage, enterprise, and consumer interviews
+- `evals/pm-interview-prep/cases.json` — 6 behavioral eval cases
+- `plugins/pm-interview-prep/README.md` — plugin deep-dive and install guide
+- Added to `marketplace.json` and `.claude-plugin/marketplace.json`
+
+### Added — Teardown Enhancements
+- `--vs` comparison mode: head-to-head product analysis across 6 dimensions + 7th "Head-to-Head Verdict" (e.g., `python scripts/teardown.py "Notion" --vs "Coda"`)
+- `--output social` format: thread-ready summary with hook, 5 bullet verdicts, and bottom line
+- Async parallel API calls via `asyncio` + `anthropic.AsyncAnthropic` — ~4x faster teardowns
+- 4 example teardowns in `examples/teardowns/`: Notion, Linear, Figma, ChatGPT
+
+### Added — Eval Enhancements
+- `--baseline` flag for `run_evals.py`: runs each case with and without the skill, shows per-case and overall behavioral lift scores
+- 5 new strategic-pm eval cases (spm-008 through spm-012): Why Now pressure test, second-order consequence identification, Decision Journal generation, PM Maturity Adapter detection, GTM launch tiering
+- 5 new product-writing-studio eval cases (pws-008 through pws-012): passive voice detection, board deck narrative structure, stakeholder email format, one-pager length enforcement, wall-of-text anti-pattern
+- Total eval coverage: 30 cases across 3 plugins (was 14 across 2)
+
+### Added — Community Loop
+- GitHub Action: teardown-on-issue (`teardown.yml`) — label an issue `teardown`, get results as a comment
+- Issue template: `teardown_request.md` for zero-barrier teardown requests
+- 5/day rate limit to manage API costs
+
+### Changed — README
+- New "Example Teardowns" section with links to 4 product teardowns
+- PM Interview Prep listed as ✅ Live in Available Plugins and Marketplace Roadmap
+- Teardown Tool section updated with `--vs`, `--output social` docs
+- Eval Harness section updated with `--baseline` mode docs
+- New "Teardown-on-Issue" section
+- Repo structure diagram updated
+- Eval badge updated to 30 cases
+- Version badge updated to 1.4.0
+
 ## [1.3.0] - 2026-03-08
 
 ### Added — AI Product Teardown Tool
