@@ -1,8 +1,8 @@
 # ProductKit — Verified Claude Plugins for Product Teams
 
-**Most AI plugins hope they work. ProductKit proves it.**
+**The AI toolkit for product teams — behavioral plugins that prove they work, and CLI tools that do real work.**
 
-Opinionated Claude plugins for PMs, designers, engineers, and researchers — built with the same eval-driven development practices used by serious AI product teams. Each plugin ships with a behavioral eval harness: an LLM-as-judge test suite that verifies the skill actually changes Claude's behavior, not just that the file parses.
+Opinionated Claude plugins and standalone CLI tools for PMs, designers, engineers, and researchers. The plugins ship with a behavioral eval harness that verifies they actually change Claude's behavior. The tools — feedback synthesis, release notes, competitive monitoring, onboarding audits, tutorial generation — produce real artifacts from your data, your repos, and your competitors' pages.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Plugin](https://img.shields.io/badge/Claude-Plugin_Marketplace-blueviolet)](https://claude.com/blog/skills)
@@ -14,11 +14,9 @@ Opinionated Claude plugins for PMs, designers, engineers, and researchers — bu
 
 ## What Sets This Apart
 
-Most Claude plugin repos have zero behavioral testing. Their CI proves files parse. That's it.
+**Plugins that prove they work.** Most Claude plugin repos have zero behavioral testing — their CI proves files parse. ProductKit ships a two-call LLM-as-judge eval harness: 31 behavioral cases across 3 plugins, each with falsifiable criteria and a 75% weighted pass threshold. You can read, run, and extend every case.
 
-ProductKit ships a **two-call LLM-as-judge eval harness**: every plugin has a test suite of behavioral cases. A subject call loads the skill and generates a response. A grader call scores the response against falsifiable criteria — "did Claude refuse to write the PRD before asking clarifying questions?" "did it flag the vanity metric?" Each case gets a weighted pass/fail score with a 75% threshold.
-
-31 cases across 3 plugins. Every case you can read, run, and extend.
+**Tools that do real work.** Most AI-for-PM tools are chatbots. ProductKit ships CLI tools that take real inputs (CSVs, git repos, live URLs) and produce real outputs (themed feedback reports, audience-targeted release notes, annotated tutorials with screenshots). Multi-phase AI pipelines, not single-prompt wrappers.
 
 > **[How the eval harness works](evals/README.md)**
 
