@@ -8,7 +8,7 @@ Opinionated Claude plugins for PMs, designers, engineers, and researchers — bu
 [![Claude Plugin](https://img.shields.io/badge/Claude-Plugin_Marketplace-blueviolet)](https://claude.com/blog/skills)
 [![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](CHANGELOG.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Behavioral Evals](https://img.shields.io/badge/evals-30%20cases%20passing-brightgreen)](evals/README.md)
+[![Behavioral Evals](https://img.shields.io/badge/evals-31%20cases%20passing-brightgreen)](evals/README.md)
 
 ---
 
@@ -18,7 +18,7 @@ Most Claude plugin repos have zero behavioral testing. Their CI proves files par
 
 ProductKit ships a **two-call LLM-as-judge eval harness**: every plugin has a test suite of behavioral cases. A subject call loads the skill and generates a response. A grader call scores the response against falsifiable criteria — "did Claude refuse to write the PRD before asking clarifying questions?" "did it flag the vanity metric?" Each case gets a weighted pass/fail score with a 75% threshold.
 
-30 cases across 3 plugins. Every case you can read, run, and extend.
+31 cases across 3 plugins. Every case you can read, run, and extend.
 
 > **[How the eval harness works](evals/README.md)**
 
@@ -252,7 +252,7 @@ productkit/
 ├── evals/
 │   ├── README.md                          # Eval methodology and how to run
 │   ├── strategic-pm/cases.json            # 12 behavioral eval cases
-│   ├── product-writing-studio/cases.json  # 12 behavioral eval cases
+│   ├── product-writing-studio/cases.json  # 13 behavioral eval cases
 │   └── pm-interview-prep/cases.json       # 6 behavioral eval cases
 ├── examples/
 │   └── teardowns/                         # Example teardown outputs
