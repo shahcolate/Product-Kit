@@ -344,6 +344,39 @@
           "weight": 2
         }
       ]
+    },
+    {
+      "id": "pws-013",
+      "name": "Tone mismatch detection",
+      "category": "tone-mismatch",
+      "user_message": "Can you review this board update before I send it?",
+      "context": "Subject: Q3 Board Update\n\nhey board folks! 👋\n\nso q3 was pretty wild lol. we shipped a TON of stuff and the numbers are looking sick. basically our MRR is up 34% qoq which is bananas. churn dropped too which is clutch.\n\nthe eng team absolutely crushed it — we knocked out the API rewrite, the new billing system AND managed to squeeze in the mobile redesign. shoutout to the whole crew tbh.\n\non the hiring front we're still trying to fill that VP Eng role, it's been a slog ngl. but we've got some promising candidates in the pipe so fingers crossed 🤞\n\nanyway the big bet for Q4 is going all-in on enterprise. we think there's a massive opportunity there and we're gonna need to staff up the sales team to go after it.\n\nlmk if you have questions! ✌️\n\n- Jamie",
+      "criteria": [
+        {
+          "id": "pws-013-c1",
+          "description": "Identifies a tone mismatch — the writing is too casual or informal for a board-level communication",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-013-c2",
+          "description": "Names the intended audience (board of directors) and explains what tone or register they expect",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-013-c3",
+          "description": "Suggests a corrected tone or offers to rewrite in a more appropriate register for board communication",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-013-c4",
+          "description": "Does NOT polish or refine the casual language without flagging the tone mismatch as a structural problem",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
     }
   ]
 }

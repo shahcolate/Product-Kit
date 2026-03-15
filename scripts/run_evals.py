@@ -314,7 +314,7 @@ def score_case(case: EvalCase, criterion_results: list[CriterionResult], subject
 # Output
 # ---------------------------------------------------------------------------
 
-def print_terminal_results(plugin: str, results: list[CaseResult], model: str) -> None:
+def print_terminal_results(plugin: str, results: list[CaseResult], model: str, verbose: bool = False) -> None:
     """Print formatted terminal output."""
     print()
     print("=" * 60)
@@ -329,9 +329,19 @@ def print_terminal_results(plugin: str, results: list[CaseResult], model: str) -
         status = "PASS" if result.passed else "FAIL"
         pct = int(result.weighted_score * 100)
         print(f"[{status}] {result.case_id} · {result.case_name:<44} {passing_weight}/{total_weight} ({pct}%)")
+        if verbose:
+            print(f"\n  ── Subject Response ──")
+            print(f"  {result.subject_response[:2000]}")
+            if len(result.subject_response) > 2000:
+                print(f"  ... ({len(result.subject_response)} chars total, truncated)")
+            print(f"\n  ── Grader Results ──")
         for cr in result.criterion_results:
             symbol = "✓" if cr.passed else "✗"
-            print(f"  {symbol} {cr.criterion_id} (w:{cr.weight}) {cr.reasoning[:80]}")
+            if verbose:
+                print(f"  {symbol} {cr.criterion_id} (w:{cr.weight})")
+                print(f"    {cr.reasoning}")
+            else:
+                print(f"  {symbol} {cr.criterion_id} (w:{cr.weight}) {cr.reasoning[:80]}")
         print()
 
     passing = sum(1 for r in results if r.passed)
@@ -548,6 +558,7 @@ def main() -> None:
     parser.add_argument("--output", choices=["terminal", "json"], default="terminal", help="Output format")
     parser.add_argument("--model", type=str, default="claude-opus-4-6", help="Claude model to use")
     parser.add_argument("--baseline", action="store_true", help="Compare skill vs vanilla Claude (no system prompt) to show behavioral lift")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Show full subject response and grader reasoning for each case")
     args = parser.parse_args()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -609,7 +620,7 @@ def main() -> None:
         results_by_plugin[plugin] = results
 
         if args.output == "terminal":
-            print_terminal_results(plugin, results, args.model)
+            print_terminal_results(plugin, results, args.model, verbose=args.verbose)
 
     if args.output == "json":
         print_json_results(results_by_plugin)

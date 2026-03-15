@@ -187,11 +187,19 @@ A failing case means the skill's behavioral claim is not reliably being honored 
 
 ## Cost
 
-Each eval case makes 2 API calls (subject + grader). At Opus pricing (~$15/M input, $75/M output), a full 30-case run costs approximately **$2–4**.
+Each eval case makes 2 API calls (subject + grader). Costs depend on response length and may vary, but here are approximate per-run costs for a full 31-case suite:
 
-This is why the workflow is `workflow_dispatch` only — not triggered on every push or PR.
+| Model | Approx. Cost per Run | Use Case |
+|---|---|---|
+| **Claude Opus** (`claude-opus-4-6`) | **$2–4** | Final quality validation, CI |
+| **Claude Sonnet** (`claude-sonnet-4-6`) | **$0.30–0.60** | Development iteration, PR checks |
+| **Claude Haiku** (`claude-haiku-4-5-20251001`) | **$0.05–0.10** | Case structure validation, rapid iteration |
 
-For iteration and development, use `--model claude-haiku-4-5-20251001` (20–50x cheaper) to validate your case structure before running at Opus quality.
+Baseline mode (`--baseline`) doubles the cost since each case runs twice (with and without skill).
+
+This is why the eval workflow is `workflow_dispatch` only — not triggered on every push or PR. There's no risk of runaway CI costs.
+
+**Recommended workflow:** Iterate with Haiku to validate case structure, spot-check with Sonnet, run final validation with Opus.
 
 ---
 
