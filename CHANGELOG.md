@@ -6,6 +6,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-03-15
+
+### Added — Functional Tools
+
+ProductKit expands beyond behavioral plugins into standalone CLI tools that do real work for product teams.
+
+- **Feedback Synthesizer** (`scripts/feedback_synth.py`) — ingest user feedback from CSV/JSON, cluster by theme using multi-phase AI pipeline (extract → merge → assess), produce structured synthesis with quotes, sentiment, urgency, and actionability assessment
+- **Release Notes Generator** (`scripts/release_notes.py`) — read git log (commit range, tag range, or date range), AI-classify changes, generate polished internal (eng-facing) and external (customer-facing) release notes with audience-appropriate language
+- **Competitive Screenshot Monitor** (`scripts/competitor_watch.py`) — capture competitor pages via headless Playwright browser, use Claude vision for semantic diff vs. previous captures ("they removed the free tier" not "7 pixels moved"), cross-competitor synthesis for strategic patterns
+- **Onboarding Flow Auditor** (`scripts/onboarding_audit.py`) — auto-navigate signup/onboarding flows via AI-driven CTA detection, capture each screen, produce per-screen friction scoring and full-flow synthesis with A-F grade
+- **Tutorial Creator** (`scripts/tutorial.py`) — take a URL + natural language goal, AI-plan navigation steps, execute in headless browser with screenshot capture, annotate each step, assemble into a complete tutorial with `index.md` + `screenshots/` directory
+
+### Added — Shared Infrastructure
+
+- `scripts/_common.py` — extracted shared utilities: `repo_root()`, `slugify()`, terminal box-drawing helpers, Anthropic client initialization, common argparse setup (`--model`, `--output`, `--save`), async text and vision API call helpers
+- `requirements.txt` — base dependencies (`anthropic`)
+- `requirements-browser.txt` — browser tool dependencies (`playwright`, `Pillow`), includes base requirements
+
+### Changed — README
+
+- New "Functional Tools" section with usage examples for all 5 tools
+- Repo structure diagram updated with new scripts, requirements files, and output directories
+- Version badge updated to 1.5.0
+
 ## [1.4.0] - 2026-03-15
 
 ### Added — PM Interview Prep Plugin

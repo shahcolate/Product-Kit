@@ -3,3 +3,8 @@
 node_modules/
 .env
 teardowns/*.md
+feedback-synthesis/
+release-notes/
+competitor-watch/
+onboarding-audits/
+tutorials/

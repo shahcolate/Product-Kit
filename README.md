@@ -6,7 +6,7 @@ Opinionated Claude plugins for PMs, designers, engineers, and researchers — bu
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Plugin](https://img.shields.io/badge/Claude-Plugin_Marketplace-blueviolet)](https://claude.com/blog/skills)
-[![Version](https://img.shields.io/badge/version-1.4.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-green.svg)](CHANGELOG.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Behavioral Evals](https://img.shields.io/badge/evals-31%20cases%20passing-brightgreen)](evals/README.md)
 
@@ -166,6 +166,59 @@ All dimensions run in parallel via async API calls (~15s vs ~60s sequential).
 
 ---
 
+## Functional Tools
+
+Standalone CLI tools that do real work for product teams. Each calls the Anthropic API directly — clone the repo, set your API key, and run.
+
+### Feedback Synthesizer
+
+Ingest user feedback from CSV/JSON, cluster by theme, and produce structured synthesis with quotes, sentiment, urgency, and recommended actions. Multi-phase pipeline: extract themes per batch, merge across batches, assess actionability.
+
+```bash
+pip install -r requirements.txt
+python scripts/feedback_synth.py feedback.csv --text-column "comment" --source "NPS Q1 2026"
+python scripts/feedback_synth.py reviews.json --format json --text-field "body" --max-themes 8 --output markdown --save
+```
+
+### Release Notes Generator
+
+Read git log (commit range, tag range, or date range), classify changes, and generate polished release notes. Produces internal (eng-facing) and external (customer-facing) versions — or both.
+
+```bash
+python scripts/release_notes.py --repo . --since v2.3.0 --audience external
+python scripts/release_notes.py --repo . --range v2.3.0..v2.4.0 --output markdown --save
+```
+
+### Competitive Screenshot Monitor
+
+Capture competitor pages via headless browser, then use Claude vision to detect and summarize semantic changes vs. previous captures. Run weekly/monthly via cron. Semantic diff ("they removed the free tier") not pixel diff.
+
+```bash
+pip install -r requirements-browser.txt && python -m playwright install chromium
+python scripts/competitor_watch.py --url "https://competitor.com/pricing" --name "Competitor X"
+python scripts/competitor_watch.py --config competitors.json --output markdown --save
+```
+
+### Onboarding Flow Auditor
+
+Navigate a signup/onboarding flow via headless browser, capture each screen, and produce a structured UX audit: friction scoring per screen, time-to-value assessment, drop-off risk identification, and overall A-F grade.
+
+```bash
+python scripts/onboarding_audit.py "https://app.example.com/signup" --product "Example App" --category "B2B SaaS"
+python scripts/onboarding_audit.py "https://linear.app/signup" --max-steps 15 --output markdown --save
+```
+
+### Tutorial Creator
+
+Take a URL + natural language goal, AI-plan navigation steps, capture screenshots at each step, and generate an annotated step-by-step tutorial. Supports pre-defined steps JSON and cookie-based auth for authenticated flows.
+
+```bash
+python scripts/tutorial.py "https://app.linear.dev" --goal "Create a new project and add a task"
+python scripts/tutorial.py "https://notion.so" --steps steps.json --auth-cookie cookie.txt --output markdown --save
+```
+
+---
+
 ## Behavioral Eval Harness
 
 The existing CI (`validate.yml`) proves plugin files parse and exist. That's table stakes. The eval harness answers the harder question: **does loading this skill actually change what Claude does?**
@@ -261,12 +314,25 @@ productkit/
 │       ├── figma.md
 │       └── chatgpt.md
 ├── scripts/
+│   ├── _common.py                         # Shared utilities across CLI tools
+│   ├── feedback_synth.py                  # Feedback Synthesizer (CSV/JSON → themed synthesis)
+│   ├── release_notes.py                   # Release Notes Generator (git log → polished notes)
+│   ├── competitor_watch.py                # Competitive Screenshot Monitor (Playwright + vision)
+│   ├── onboarding_audit.py                # Onboarding Flow Auditor (Playwright + vision)
+│   ├── tutorial.py                        # Tutorial Creator (Playwright + vision + annotation)
 │   ├── run_evals.py                       # Eval runner (--baseline for skill vs vanilla)
 │   └── teardown.py                        # Teardown CLI (--vs, --output social, async)
+├── requirements.txt                       # Base deps (anthropic)
+├── requirements-browser.txt               # Browser tool deps (playwright, Pillow)
 ├── .github/
 │   ├── workflows/teardown.yml             # Teardown-on-issue Action
 │   └── ISSUE_TEMPLATE/teardown_request.md
-└── teardowns/                             # Saved teardown reports (gitignored)
+├── teardowns/                             # Saved teardown reports (gitignored)
+├── feedback-synthesis/                    # Saved feedback synthesis reports (gitignored)
+├── release-notes/                         # Saved release notes (gitignored)
+├── competitor-watch/                      # Competitor screenshots and reports (gitignored)
+├── onboarding-audits/                     # Onboarding audit reports (gitignored)
+└── tutorials/                             # Generated tutorials with screenshots (gitignored)
 ```
 
 ---
