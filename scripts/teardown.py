@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """
 ProductKit AI Product Teardown Tool
 Runs any product through Strategic PM's full framework battery and produces a structured report.
@@ -8,11 +10,14 @@ Usage:
   python scripts/teardown.py "Notion" --context "workspace productivity tool for teams"
   python scripts/teardown.py "Linear" --model claude-sonnet-4-6
   python scripts/teardown.py "Slack" --output markdown --save
+  python scripts/teardown.py "Notion" --vs "Coda"
+  python scripts/teardown.py "Notion" --output social
 
 Requires: ANTHROPIC_API_KEY env var, pip install anthropic
 """
 
 import argparse
+import asyncio
 import os
 import re
 import sys
@@ -197,9 +202,56 @@ Be opinionated, direct, and concise. Take a position.""",
     },
 ]
 
+COMPARISON_DIMENSION = {
+    "num": 7,
+    "title": "HEAD-TO-HEAD VERDICT",
+    "prompt": """You just completed a full 6-dimension teardown of both {product_a} and {product_b}. Now deliver the head-to-head verdict.
+
+{context_line}
+
+Provide a structured comparison with these exact sections:
+
+**Dimension Scorecard:**
+For each of the 6 dimensions, declare a winner (or tie) with a one-line justification:
+1. Jobs to Be Done: {product_a} / {product_b} / Tie — [why]
+2. Competitive Moat: {product_a} / {product_b} / Tie — [why]
+3. Growth Model: {product_a} / {product_b} / Tie — [why]
+4. Anti-Pattern Flags: {product_a} / {product_b} / Tie — [why] (fewer flags = better)
+5. Monetization: {product_a} / {product_b} / Tie — [why]
+6. Strategic Verdict: {product_a} / {product_b} / Tie — [why]
+
+**Overall Winner:** {product_a} or {product_b} — and the single most important reason why.
+
+**Where the Loser Wins:** The one dimension or area where the losing product is genuinely stronger.
+
+**If They Merged:** The single most powerful product that could be built by combining the best of both.
+
+Be opinionated, direct, and decisive. Pick a winner — don't hedge.""",
+}
+
+SOCIAL_SUMMARY_PROMPT = """You just completed a full 6-dimension teardown of {product}. Now distill it into a social-ready summary.
+
+{context_line}
+
+Create a social media thread summary with these exact sections:
+
+**Hook:** A single provocative sentence (under 280 characters) that captures the most surprising or contrarian finding. Make it quotable.
+
+**5 Bullet Verdicts:** One per line, each under 60 characters, each starting with an emoji verdict:
+- 🟢 = strength
+- 🟡 = mixed/watch
+- 🔴 = weakness
+Format: [emoji] [Dimension]: [one-line verdict]
+
+**Bottom Line:** One sentence — would you bet on this product? Why or why not?
+
+**Tag:** "Full teardown: github.com/shahcolate/Product-Kit"
+
+Be punchy, opinionated, and shareable. No hedging."""
+
 
 # ---------------------------------------------------------------------------
-# API calls
+# Async API calls
 # ---------------------------------------------------------------------------
 
 def build_dimension_prompt(product: str, context: str | None, dimension: dict) -> str:
@@ -208,9 +260,25 @@ def build_dimension_prompt(product: str, context: str | None, dimension: dict) -
     return dimension["prompt"].format(product=product, context_line=context_line)
 
 
-def call_dimension(client: anthropic.Anthropic, model: str, skill_text: str, prompt: str) -> str:
-    """Make a single API call for one teardown dimension."""
-    message = client.messages.create(
+def build_comparison_prompt(product_a: str, product_b: str, context: str | None) -> str:
+    """Build the user message for the head-to-head comparison dimension."""
+    context_line = f"Context: {context}" if context else f"Analyze based on publicly known information about {product_a} and {product_b}."
+    return COMPARISON_DIMENSION["prompt"].format(
+        product_a=product_a, product_b=product_b, context_line=context_line,
+    )
+
+
+def build_social_prompt(product: str, context: str | None) -> str:
+    """Build the user message for the social summary."""
+    context_line = f"Context: {context}" if context else f"Analyze based on publicly known information about {product}."
+    return SOCIAL_SUMMARY_PROMPT.format(product=product, context_line=context_line)
+
+
+async def call_dimension_async(
+    client: anthropic.AsyncAnthropic, model: str, skill_text: str, prompt: str,
+) -> str:
+    """Make a single async API call for one teardown dimension."""
+    message = await client.messages.create(
         model=model,
         max_tokens=1024,
         temperature=0.3,
@@ -220,8 +288,36 @@ def call_dimension(client: anthropic.Anthropic, model: str, skill_text: str, pro
     return message.content[0].text
 
 
+async def run_dimensions_async(
+    client: anthropic.AsyncAnthropic,
+    model: str,
+    skill_text: str,
+    product: str,
+    context: str | None,
+    dimensions: list[dict],
+    label: str = "",
+) -> list[tuple[dict, str]]:
+    """Run all dimensions concurrently for a single product."""
+    prefix = f"  [{label}] " if label else "  "
+
+    async def _run_one(dim: dict) -> tuple[dict, str]:
+        prompt = build_dimension_prompt(product, context, dim)
+        try:
+            content = await call_dimension_async(client, model, skill_text, prompt)
+            print(f"{prefix}[{dim['num']}/6] {dim['title']}... done")
+            return (dim, content)
+        except Exception as e:
+            print(f"{prefix}[{dim['num']}/6] {dim['title']}... ERROR: {e}")
+            return (dim, f"*Analysis failed: {e}*")
+
+    tasks = [_run_one(dim) for dim in dimensions]
+    results = await asyncio.gather(*tasks)
+    # Sort by dimension number to preserve order
+    return sorted(results, key=lambda r: r[0]["num"])
+
+
 # ---------------------------------------------------------------------------
-# Output formatting
+# Output formatting — single product
 # ---------------------------------------------------------------------------
 
 def format_terminal(product: str, model: str, results: list[tuple[dict, str]]) -> str:
@@ -275,60 +371,149 @@ def format_markdown(product: str, model: str, results: list[tuple[dict, str]]) -
     return "\n".join(lines)
 
 
+def format_social(product: str, social_content: str) -> str:
+    """Format social-ready summary for terminal display."""
+    width = 62
+    lines = []
+    lines.append(f"╔{'═' * width}╗")
+    lines.append(f"║{'  SOCIAL TEARDOWN: ' + product:<{width}}║")
+    lines.append(f"╚{'═' * width}╝")
+    lines.append("")
+    lines.append(social_content.strip())
+    lines.append("")
+    lines.append("━" * (width + 2))
+    lines.append("Generated by ProductKit · github.com/shahcolate/Product-Kit")
+    lines.append("")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Output formatting — comparison (--vs)
+# ---------------------------------------------------------------------------
+
+def format_comparison_terminal(
+    product_a: str, product_b: str, model: str,
+    results_a: list[tuple[dict, str]],
+    results_b: list[tuple[dict, str]],
+    verdict: str,
+) -> str:
+    """Format side-by-side comparison for terminal display."""
+    now = datetime.now().strftime("%B %Y")
+    header_text = f"  PRODUCT COMPARISON: {product_a} vs {product_b}"
+    meta_text = f"  Model: {model} · {now}"
+    width = max(62, len(header_text) + 4, len(meta_text) + 4)
+
+    lines = []
+    lines.append(f"╔{'═' * width}╗")
+    lines.append(f"║{header_text:<{width}}║")
+    lines.append(f"║{meta_text:<{width}}║")
+    lines.append(f"╚{'═' * width}╝")
+    lines.append("")
+
+    for (dim_a, content_a), (dim_b, content_b) in zip(results_a, results_b):
+        title = f"━━━ {dim_a['num']}. {dim_a['title']} "
+        title += "━" * max(0, width - len(title))
+        lines.append(title)
+        lines.append("")
+        lines.append(f"┌─ {product_a}")
+        lines.append("")
+        lines.append(content_a.strip())
+        lines.append("")
+        lines.append(f"├─ {product_b}")
+        lines.append("")
+        lines.append(content_b.strip())
+        lines.append("")
+
+    # Head-to-head verdict
+    title = f"━━━ 7. HEAD-TO-HEAD VERDICT "
+    title += "━" * max(0, width - len(title))
+    lines.append(title)
+    lines.append("")
+    lines.append(verdict.strip())
+    lines.append("")
+
+    footer = "━" * (width + 2)
+    lines.append(footer)
+    lines.append("Generated by ProductKit · github.com/shahcolate/Product-Kit")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
+def format_comparison_markdown(
+    product_a: str, product_b: str, model: str,
+    results_a: list[tuple[dict, str]],
+    results_b: list[tuple[dict, str]],
+    verdict: str,
+) -> str:
+    """Format side-by-side comparison as Markdown."""
+    now = datetime.now().strftime("%B %d, %Y")
+    lines = []
+    lines.append(f"# Product Comparison: {product_a} vs {product_b}")
+    lines.append(f"*Model: {model} · {now}*")
+    lines.append("")
+
+    for (dim_a, content_a), (dim_b, content_b) in zip(results_a, results_b):
+        lines.append(f"## {dim_a['num']}. {dim_a['title']}")
+        lines.append("")
+        lines.append(f"### {product_a}")
+        lines.append("")
+        lines.append(content_a.strip())
+        lines.append("")
+        lines.append(f"### {product_b}")
+        lines.append("")
+        lines.append(content_b.strip())
+        lines.append("")
+
+    lines.append("## 7. HEAD-TO-HEAD VERDICT")
+    lines.append("")
+    lines.append(verdict.strip())
+    lines.append("")
+
+    lines.append("---")
+    lines.append("*Generated by [ProductKit](https://github.com/shahcolate/Product-Kit)*")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="AI Product Teardown — run any product through Strategic PM's framework battery"
-    )
-    parser.add_argument("product", help="Product name to analyze")
-    parser.add_argument("--context", type=str, default=None, help="One-liner about the product (helps if obscure)")
-    parser.add_argument("--model", type=str, default="claude-sonnet-4-6", help="Claude model to use (default: claude-sonnet-4-6)")
-    parser.add_argument("--output", choices=["terminal", "markdown"], default="terminal", help="Output format")
-    parser.add_argument("--save", action="store_true", help="Save output to teardowns/<product-slug>-<date>.md")
-    args = parser.parse_args()
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("ERROR: ANTHROPIC_API_KEY environment variable not set.", file=sys.stderr)
-        sys.exit(1)
-
-    client = anthropic.Anthropic(api_key=api_key)
-
-    # Load Strategic PM skill
-    try:
-        skill_text = load_skill()
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
-
+async def run_single(args, client: anthropic.AsyncAnthropic, skill_text: str) -> None:
+    """Run a single-product teardown."""
     product = args.product
     print(f"\n🔍 Running teardown: {product}")
     if args.context:
         print(f"   Context: {args.context}")
     print(f"   Model: {args.model}")
     print(f"   Dimensions: {len(DIMENSIONS)}")
+    if args.output == "social":
+        print(f"   Output: social (thread-ready summary)")
     print()
 
-    # Run each dimension
-    results: list[tuple[dict, str]] = []
-    for dim in DIMENSIONS:
-        print(f"  [{dim['num']}/6] {dim['title']}...", end=" ", flush=True)
-        prompt = build_dimension_prompt(product, args.context, dim)
-        try:
-            content = call_dimension(client, args.model, skill_text, prompt)
-            results.append((dim, content))
-            print("done")
-        except Exception as e:
-            print(f"ERROR: {e}")
-            results.append((dim, f"*Analysis failed: {e}*"))
-
+    # Run all dimensions concurrently
+    results = await run_dimensions_async(
+        client, args.model, skill_text, product, args.context, DIMENSIONS,
+    )
     print()
 
-    # Format output
-    if args.output == "markdown":
+    # Social output: run one more call to distill
+    if args.output == "social":
+        print("  Generating social summary...", end=" ", flush=True)
+        social_prompt = build_social_prompt(product, args.context)
+        # Include the full teardown as context for the social summary
+        full_teardown = "\n\n".join(
+            f"## {dim['title']}\n{content}" for dim, content in results
+        )
+        combined_prompt = f"Here is the full teardown you just completed:\n\n{full_teardown}\n\n---\n\n{social_prompt}"
+        social_content = await call_dimension_async(
+            client, args.model, skill_text, combined_prompt,
+        )
+        print("done\n")
+        output = format_social(product, social_content)
+    elif args.output == "markdown":
         output = format_markdown(product, args.model, results)
     else:
         output = format_terminal(product, args.model, results)
@@ -344,10 +529,113 @@ def main() -> None:
         filename = f"{slug}-{date_str}.md"
         filepath = teardowns_dir / filename
 
-        # Always save as markdown when saving to file
-        md_output = format_markdown(product, args.model, results)
+        if args.output == "social":
+            md_output = format_social(product, social_content)
+        else:
+            md_output = format_markdown(product, args.model, results)
         filepath.write_text(md_output)
         print(f"💾 Saved to {filepath}")
+
+
+async def run_comparison(args, client: anthropic.AsyncAnthropic, skill_text: str) -> None:
+    """Run a --vs comparison teardown of two products."""
+    product_a = args.product
+    product_b = args.vs
+    print(f"\n🔍 Running comparison: {product_a} vs {product_b}")
+    if args.context:
+        print(f"   Context: {args.context}")
+    print(f"   Model: {args.model}")
+    print(f"   Dimensions: {len(DIMENSIONS)} × 2 products + head-to-head verdict")
+    print()
+
+    # Run both products concurrently
+    results_a, results_b = await asyncio.gather(
+        run_dimensions_async(
+            client, args.model, skill_text, product_a, args.context, DIMENSIONS,
+            label=product_a,
+        ),
+        run_dimensions_async(
+            client, args.model, skill_text, product_b, args.context, DIMENSIONS,
+            label=product_b,
+        ),
+    )
+
+    # Run head-to-head verdict with both teardowns as context
+    print(f"\n  [7/7] HEAD-TO-HEAD VERDICT...", end=" ", flush=True)
+    teardown_a = "\n\n".join(f"## {dim['title']}\n{c}" for dim, c in results_a)
+    teardown_b = "\n\n".join(f"## {dim['title']}\n{c}" for dim, c in results_b)
+    comparison_prompt = build_comparison_prompt(product_a, product_b, args.context)
+    combined = (
+        f"Full teardown of {product_a}:\n\n{teardown_a}\n\n---\n\n"
+        f"Full teardown of {product_b}:\n\n{teardown_b}\n\n---\n\n"
+        f"{comparison_prompt}"
+    )
+    verdict = await call_dimension_async(client, args.model, skill_text, combined)
+    print("done\n")
+
+    # Format output
+    if args.output == "markdown":
+        output = format_comparison_markdown(
+            product_a, product_b, args.model, results_a, results_b, verdict,
+        )
+    else:
+        output = format_comparison_terminal(
+            product_a, product_b, args.model, results_a, results_b, verdict,
+        )
+
+    print(output)
+
+    # Save if requested
+    if args.save:
+        teardowns_dir = repo_root() / "teardowns"
+        teardowns_dir.mkdir(exist_ok=True)
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        slug_a = slugify(product_a)
+        slug_b = slugify(product_b)
+        filename = f"{slug_a}-vs-{slug_b}-{date_str}.md"
+        filepath = teardowns_dir / filename
+
+        md_output = format_comparison_markdown(
+            product_a, product_b, args.model, results_a, results_b, verdict,
+        )
+        filepath.write_text(md_output)
+        print(f"💾 Saved to {filepath}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="AI Product Teardown — run any product through Strategic PM's framework battery"
+    )
+    parser.add_argument("product", help="Product name to analyze")
+    parser.add_argument("--vs", type=str, default=None, help="Compare against a second product (head-to-head mode)")
+    parser.add_argument("--context", type=str, default=None, help="One-liner about the product (helps if obscure)")
+    parser.add_argument("--model", type=str, default="claude-sonnet-4-6", help="Claude model to use (default: claude-sonnet-4-6)")
+    parser.add_argument("--output", choices=["terminal", "markdown", "social"], default="terminal", help="Output format (social = thread-ready summary)")
+    parser.add_argument("--save", action="store_true", help="Save output to teardowns/<product-slug>-<date>.md")
+    args = parser.parse_args()
+
+    if args.vs and args.output == "social":
+        print("ERROR: --output social is not supported with --vs comparison mode.", file=sys.stderr)
+        sys.exit(1)
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        print("ERROR: ANTHROPIC_API_KEY environment variable not set.", file=sys.stderr)
+        sys.exit(1)
+
+    client = anthropic.AsyncAnthropic(api_key=api_key)
+
+    # Load Strategic PM skill
+    try:
+        skill_text = load_skill()
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if args.vs:
+        asyncio.run(run_comparison(args, client, skill_text))
+    else:
+        asyncio.run(run_single(args, client, skill_text))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,132 @@
+name: AI Product Teardown
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+
+jobs:
+  teardown:
+    if: github.event.label.name == 'teardown'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check daily rate limit
+        id: rate-limit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+          COUNT=$(gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            --paginate --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("# Product Teardown:")))] | length' 2>/dev/null || echo "0")
+
+          # Count teardown comments across ALL issues today
+          TOTAL=$(gh api repos/${{ github.repository }}/issues/comments \
+            --paginate \
+            --jq "[.[] | select(.user.login == \"github-actions[bot]\" and (.created_at | startswith(\"$TODAY\")) and (.body | startswith(\"# Product Teardown:\")))] | length" 2>/dev/null || echo "0")
+
+          echo "today_count=$TOTAL" >> "$GITHUB_OUTPUT"
+          if [ "$TOTAL" -ge 5 ]; then
+            echo "limited=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "limited=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post rate-limit notice
+        if: steps.rate-limit.outputs.limited == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -f body="**Teardown skipped:** daily limit of 5 automated teardowns has been reached. Please try again tomorrow."
+          exit 0
+
+      - name: Checkout repository
+        if: steps.rate-limit.outputs.limited == 'false'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.rate-limit.outputs.limited == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.rate-limit.outputs.limited == 'false'
+        run: pip install anthropic
+
+      - name: Extract product name and context
+        if: steps.rate-limit.outputs.limited == 'false'
+        id: extract
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Extract product name from title (format: "Teardown: {Product Name}")
+          PRODUCT=$(echo "$ISSUE_TITLE" | sed -n 's/^[Tt]eardown:[[:space:]]*//p')
+          if [ -z "$PRODUCT" ]; then
+            echo "error=Could not extract product name from issue title. Expected format: 'Teardown: Product Name'" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "product=$PRODUCT" >> "$GITHUB_OUTPUT"
+
+          # Extract context from issue body (ignore empty or template-only bodies)
+          CONTEXT=$(echo "$ISSUE_BODY" | sed '/^[[:space:]]*$/d' | sed '/^#/d' | sed '/^---/d' | head -5 | tr '\n' ' ' | xargs)
+          if [ -n "$CONTEXT" ] && [ ${#CONTEXT} -gt 10 ]; then
+            echo "has_context=true" >> "$GITHUB_OUTPUT"
+            # Write context to file to avoid shell escaping issues
+            echo "$CONTEXT" > /tmp/teardown_context.txt
+          else
+            echo "has_context=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post error if product name missing
+        if: steps.rate-limit.outputs.limited == 'false' && steps.extract.outputs.error
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            -f body="**Teardown failed:** ${{ steps.extract.outputs.error }}"
+
+      - name: Run teardown
+        if: steps.rate-limit.outputs.limited == 'false' && steps.extract.outputs.product
+        id: teardown
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          PRODUCT="${{ steps.extract.outputs.product }}"
+          CMD="python scripts/teardown.py \"$PRODUCT\" --output markdown"
+
+          if [ "${{ steps.extract.outputs.has_context }}" = "true" ]; then
+            CONTEXT=$(cat /tmp/teardown_context.txt)
+            CMD="$CMD --context \"$CONTEXT\""
+          fi
+
+          echo "Running: $CMD"
+          eval $CMD > /tmp/teardown_output.md 2>&1
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Post teardown result
+        if: steps.rate-limit.outputs.limited == 'false' && steps.extract.outputs.product && steps.teardown.outputs.exit_code == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Post the teardown output as a comment
+          gh issue comment ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --body-file /tmp/teardown_output.md
+
+          # Add a completed reaction to the issue
+          gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/reactions \
+            -f content=rocket
+
+      - name: Post failure notice
+        if: steps.rate-limit.outputs.limited == 'false' && steps.extract.outputs.product && steps.teardown.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --body "**Teardown failed.** The automated analysis for \"${{ steps.extract.outputs.product }}\" encountered an error. Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details."

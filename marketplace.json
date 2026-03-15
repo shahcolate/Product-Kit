@@ -16,6 +16,12 @@
       "source": "./plugins/product-writing-studio",
       "description": "Expert product communicator — exec updates, strategy memos, board decks, stakeholder emails, product announcements, one-pagers, design briefs, and launch comms. Audience-first, pyramid-principle driven, anti-jargon.",
       "version": "1.1.0"
+    },
+    {
+      "name": "pm-interview-prep",
+      "source": "./plugins/pm-interview-prep",
+      "description": "PM interview coach — product sense, execution, estimation, and behavioral question coaching with JTBD-framed answers, structured decomposition, STAR format, mock interview mode, and anti-pattern detection.",
+      "version": "1.0.0"
     }
   ]
 }

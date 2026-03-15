@@ -8,6 +8,7 @@ Usage:
   python scripts/run_evals.py --plugin strategic-pm
   python scripts/run_evals.py --output json
   python scripts/run_evals.py --model claude-haiku-4-5-20251001
+  python scripts/run_evals.py --plugin strategic-pm --baseline
 
 Requires: ANTHROPIC_API_KEY env var, pip install anthropic
 """
@@ -62,6 +63,15 @@ class CaseResult:
     criterion_results: list[CriterionResult]
     weighted_score: float
     passed: bool
+
+
+@dataclass
+class BaselineCaseResult:
+    case_id: str
+    case_name: str
+    with_skill: CaseResult
+    without_skill: CaseResult
+    lift: float  # skill score - vanilla score (percentage points)
 
 
 # ---------------------------------------------------------------------------
@@ -433,11 +443,111 @@ def run_plugin(client: anthropic.Anthropic, plugin: str, model: str, output_mode
     return results
 
 
+def run_plugin_baseline(client: anthropic.Anthropic, plugin: str, model: str, output_mode: str) -> list[BaselineCaseResult]:
+    """Run all eval cases with and without the skill, comparing behavioral lift."""
+    cases, cases_data = load_cases(plugin)
+    skill_text = load_skill(plugin)
+    check_version_drift(plugin, cases_data)
+
+    baseline_results = []
+    for case in cases:
+        # Run WITH skill
+        if output_mode == "terminal":
+            print(f"  Running {case.id} — {case.name}...")
+            print(f"    WITH skill...", end=" ", flush=True)
+        skill_response = call_subject(client, model, skill_text, case)
+        skill_grader = build_grader_prompt(case, skill_response)
+        skill_criteria = call_grader(client, model, skill_grader, case)
+        skill_result = score_case(case, skill_criteria, skill_response)
+        if output_mode == "terminal":
+            print(f"{int(skill_result.weighted_score * 100)}%")
+
+        # Run WITHOUT skill (vanilla Claude — empty system prompt)
+        if output_mode == "terminal":
+            print(f"    WITHOUT skill...", end=" ", flush=True)
+        vanilla_response = call_subject(client, model, "", case)
+        vanilla_grader = build_grader_prompt(case, vanilla_response)
+        vanilla_criteria = call_grader(client, model, vanilla_grader, case)
+        vanilla_result = score_case(case, vanilla_criteria, vanilla_response)
+        if output_mode == "terminal":
+            print(f"{int(vanilla_result.weighted_score * 100)}%")
+
+        lift = (skill_result.weighted_score - vanilla_result.weighted_score) * 100
+        baseline_results.append(
+            BaselineCaseResult(
+                case_id=case.id,
+                case_name=case.name,
+                with_skill=skill_result,
+                without_skill=vanilla_result,
+                lift=lift,
+            )
+        )
+
+    return baseline_results
+
+
+def print_baseline_results(plugin: str, results: list[BaselineCaseResult], model: str) -> None:
+    """Print formatted baseline comparison output."""
+    print()
+    print("=" * 70)
+    print(f"BASELINE COMPARISON — {plugin}")
+    print(f"Model: {model} | Cases: {len(results)}")
+    print("Skill vs Vanilla Claude (no system prompt)")
+    print("=" * 70)
+    print()
+
+    total_skill_w = 0
+    total_vanilla_w = 0
+    total_weight = 0
+
+    for r in results:
+        skill_pct = int(r.with_skill.weighted_score * 100)
+        vanilla_pct = int(r.without_skill.weighted_score * 100)
+        lift = int(r.lift)
+        skill_status = "PASS" if r.with_skill.passed else "FAIL"
+        vanilla_status = "PASS" if r.without_skill.passed else "FAIL"
+        skill_icon = "✅" if r.with_skill.passed else "❌"
+        vanilla_icon = "✅" if r.without_skill.passed else "❌"
+        lift_sign = "+" if lift >= 0 else ""
+
+        print(f"{r.case_id} · {r.case_name}")
+
+        # Compute criterion weights for this case
+        skill_total = sum(cr.weight for cr in r.with_skill.criterion_results)
+        skill_pass = sum(cr.weight for cr in r.with_skill.criterion_results if cr.passed)
+        vanilla_total = sum(cr.weight for cr in r.without_skill.criterion_results)
+        vanilla_pass = sum(cr.weight for cr in r.without_skill.criterion_results if cr.passed)
+
+        print(f"  WITH skill:    {skill_pass}/{skill_total} ({skill_pct}%) {skill_icon}")
+        print(f"  WITHOUT skill: {vanilla_pass}/{vanilla_total} ({vanilla_pct}%) {vanilla_icon}")
+        print(f"  Skill lift: {lift_sign}{lift} points")
+        print()
+
+        total_skill_w += skill_pass
+        total_vanilla_w += vanilla_pass
+        total_weight += skill_total
+
+    # Summary
+    skill_overall = int(total_skill_w / total_weight * 100) if total_weight > 0 else 0
+    vanilla_overall = int(total_vanilla_w / total_weight * 100) if total_weight > 0 else 0
+    overall_lift = skill_overall - vanilla_overall
+    lift_sign = "+" if overall_lift >= 0 else ""
+
+    print("─" * 70)
+    print(f"OVERALL — {plugin}")
+    print(f"  WITH skill:    {skill_overall}% weighted score")
+    print(f"  WITHOUT skill: {vanilla_overall}% weighted score")
+    print(f"  Skill lift:    {lift_sign}{overall_lift} points")
+    print("─" * 70)
+    print()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="ProductKit Behavioral Eval Harness")
     parser.add_argument("--plugin", type=str, default=None, help="Plugin name to evaluate (default: all)")
     parser.add_argument("--output", choices=["terminal", "json"], default="terminal", help="Output format")
     parser.add_argument("--model", type=str, default="claude-opus-4-6", help="Claude model to use")
+    parser.add_argument("--baseline", action="store_true", help="Compare skill vs vanilla Claude (no system prompt) to show behavioral lift")
     args = parser.parse_args()
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -456,6 +566,36 @@ def main() -> None:
             print("No eval cases found under evals/. Nothing to run.", file=sys.stderr)
             sys.exit(0)
 
+    # Baseline mode: run with and without skill, show comparison
+    if args.baseline:
+        for plugin in plugins:
+            if args.output == "terminal":
+                print(f"\nLoading plugin: {plugin} (baseline comparison mode)")
+            try:
+                baseline_results = run_plugin_baseline(client, plugin, args.model, args.output)
+            except FileNotFoundError as e:
+                print(f"ERROR: {e}", file=sys.stderr)
+                sys.exit(1)
+
+            if args.output == "terminal":
+                print_baseline_results(plugin, baseline_results, args.model)
+            elif args.output == "json":
+                output = {
+                    plugin: [
+                        {
+                            "case_id": r.case_id,
+                            "case_name": r.case_name,
+                            "with_skill_score": round(r.with_skill.weighted_score, 4),
+                            "without_skill_score": round(r.without_skill.weighted_score, 4),
+                            "lift": round(r.lift, 1),
+                        }
+                        for r in baseline_results
+                    ]
+                }
+                print(json.dumps(output, indent=2))
+        sys.exit(0)
+
+    # Standard mode
     results_by_plugin: dict[str, list[CaseResult]] = {}
 
     for plugin in plugins:
