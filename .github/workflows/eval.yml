@@ -11,6 +11,11 @@ on:
         description: "Claude model"
         required: false
         default: "claude-opus-4-6"
+      baseline:
+        description: "Run baseline comparison (skill vs vanilla Claude)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   eval:
@@ -27,4 +32,6 @@ jobs:
         run: |
           PLUGIN_ARG=""
           if [ -n "${{ inputs.plugin }}" ]; then PLUGIN_ARG="--plugin ${{ inputs.plugin }}"; fi
-          python scripts/run_evals.py $PLUGIN_ARG --model "${{ inputs.model }}"
+          BASELINE_ARG=""
+          if [ "${{ inputs.baseline }}" = "true" ]; then BASELINE_ARG="--baseline"; fi
+          python scripts/run_evals.py $PLUGIN_ARG --model "${{ inputs.model }}" $BASELINE_ARG

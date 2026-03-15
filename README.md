@@ -266,10 +266,7 @@ productkit/
 ├── .github/
 │   ├── workflows/teardown.yml             # Teardown-on-issue Action
 │   └── ISSUE_TEMPLATE/teardown_request.md
-├── teardowns/                             # Saved teardown reports (gitignored)
-└── releases/
-    ├── strategic-pm-v1.0.0.zip
-    └── product-writing-studio-v1.1.0.zip
+└── teardowns/                             # Saved teardown reports (gitignored)
 ```
 
 ---
