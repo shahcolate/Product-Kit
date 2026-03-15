@@ -1,0 +1,193 @@
+{
+  "plugin": "pm-interview-prep",
+  "skill_path": "plugins/pm-interview-prep/skills/pm-interview-prep/SKILL.md",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "pmip-001",
+      "name": "Product sense answer uses JTBD framing before solutions",
+      "category": "product-sense",
+      "user_message": "How would you improve Instagram Stories?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pmip-001-c1",
+          "description": "Response identifies a specific user segment and their problem or job-to-be-done before proposing any solution",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-001-c2",
+          "description": "Response does NOT jump directly to feature ideas without first framing the user and their problem",
+          "should_pass": false,
+          "weight": 3
+        },
+        {
+          "id": "pmip-001-c3",
+          "description": "Response includes success metrics or a way to measure whether the improvement worked",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pmip-001-c4",
+          "description": "Response names at least one tradeoff or downside of the proposed approach",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pmip-002",
+      "name": "Execution question elicits structured prioritization with a decision",
+      "category": "execution",
+      "user_message": "You have three features your stakeholders want shipped this quarter, but engineering capacity for only one. How do you decide?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pmip-002-c1",
+          "description": "Response names explicit decision criteria or a prioritization framework (e.g., impact, effort, strategic alignment, urgency)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-002-c2",
+          "description": "Response makes a clear recommendation or decision rather than leaving the choice open-ended",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-002-c3",
+          "description": "Response addresses stakeholder communication — how to inform stakeholders whose features are deprioritized",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pmip-003",
+      "name": "Estimation answer uses structured decomposition",
+      "category": "estimation",
+      "user_message": "How many Uber rides happen in New York City per day?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pmip-003-c1",
+          "description": "Response breaks the estimate into independent component variables rather than guessing a single number",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-003-c2",
+          "description": "Response states assumptions explicitly for each component of the estimate",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-003-c3",
+          "description": "Response includes a sanity check — comparing the final number against a known reference point or gut-checking reasonableness",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pmip-003-c4",
+          "description": "Response identifies which variable has the most sensitivity — which assumption, if wrong, changes the answer the most",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pmip-004",
+      "name": "Behavioral coaching enforces STAR with PM depth",
+      "category": "behavioral",
+      "user_message": "Tell me about a time you had to make a product decision with incomplete data. Here's my answer: We were deciding whether to launch a new feature. We didn't have much data so we just went with our gut and launched it. It worked out well and users liked it.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pmip-004-c1",
+          "description": "Response flags that the answer lacks specificity — no concrete situation, no quantified result, no decision rationale",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-004-c2",
+          "description": "Response coaches the user to include specific metrics or quantified outcomes in the Result section",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-004-c3",
+          "description": "Response identifies the missing Action depth — the answer doesn't explain what the candidate personally did, what alternatives were considered, or why this approach was chosen",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pmip-004-c4",
+          "description": "Response does NOT praise the answer as strong or sufficient without significant critique",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pmip-005",
+      "name": "Mock interview mode activates with proper setup and scoring",
+      "category": "mock-interview",
+      "user_message": "Can you run a mock PM interview with me? I'm preparing for a Google PM interview.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pmip-005-c1",
+          "description": "Response asks clarifying setup questions before starting — such as question type (product sense, execution, estimation, behavioral), session length, or focus area",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-005-c2",
+          "description": "Response does NOT immediately launch into a question without any setup or context gathering",
+          "should_pass": false,
+          "weight": 2
+        },
+        {
+          "id": "pmip-005-c3",
+          "description": "Response acknowledges the Google context and calibrates expectations or approach accordingly (e.g., mentioning scale, data-driven rigor, or structured frameworks)",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pmip-006",
+      "name": "Anti-pattern detection flags solution-first thinking",
+      "category": "anti-pattern",
+      "user_message": "For the question 'How would you improve Spotify?', here's my answer: I'd add a feature where users can create collaborative playlists with friends in real-time, with a shared queue and voting on the next song. We could also add AI-generated playlist covers and social listening rooms.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pmip-006-c1",
+          "description": "Response flags the solution-first anti-pattern — the candidate jumped to features without identifying a user, a problem, or a job-to-be-done",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-006-c2",
+          "description": "Response flags the breadth-without-depth anti-pattern — multiple feature ideas listed without going deep on any single one",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pmip-006-c3",
+          "description": "Response coaches the user to start with a specific user segment and their problem before proposing solutions",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pmip-006-c4",
+          "description": "Response notes the absence of success metrics or tradeoffs in the answer",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

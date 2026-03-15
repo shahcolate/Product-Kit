@@ -209,6 +209,141 @@
           "weight": 2
         }
       ]
+    },
+    {
+      "id": "pws-008",
+      "name": "Passive voice detection",
+      "category": "passive-voice",
+      "user_message": "Review this paragraph.",
+      "context": "The decision was made to deprecate the legacy API. The migration plan was approved by the infrastructure team. Users will be notified when the timeline has been finalized.",
+      "criteria": [
+        {
+          "id": "pws-008-c1",
+          "description": "Flags excessive passive voice as a problem in the paragraph",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-008-c2",
+          "description": "Identifies who is making the decision, approving the plan, and notifying users — surfaces the missing actors",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-008-c3",
+          "description": "Offers an active-voice rewrite of the paragraph",
+          "should_pass": true,
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "id": "pws-009",
+      "name": "Board deck narrative structure",
+      "category": "board-deck",
+      "user_message": "I need to present our product strategy to the board. Help me structure a deck.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pws-009-c1",
+          "description": "Recommends leading with the strategic narrative — the overarching story and thesis — rather than a feature list",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-009-c2",
+          "description": "Suggests 3 or fewer key messages to anchor the deck around",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-009-c3",
+          "description": "Does NOT produce a feature-by-feature walkthrough without strategic framing",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-010",
+      "name": "Stakeholder email format",
+      "category": "stakeholder-email",
+      "user_message": "Write an email to engineering leadership explaining why we're deprioritizing their top request.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "pws-010-c1",
+          "description": "Asks who specifically will read the email and what their current stance is on the request",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-010-c2",
+          "description": "Leads with acknowledgment of the request's importance before presenting the deprioritization rationale",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "pws-010-c3",
+          "description": "Does NOT draft the email without first understanding the audience's context",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-011",
+      "name": "One-pager length enforcement",
+      "category": "one-pager-length",
+      "user_message": "Here's my one-pager, can you review it?",
+      "context": "Customer Health Score — Product One-Pager\n\nBackground\nAs our customer base has grown to over 2,400 accounts across three segments (SMB, Mid-Market, and Enterprise), the Customer Success team has struggled to proactively identify at-risk accounts before churn signals become obvious. Today, CSMs rely on a combination of gut instinct, anecdotal feedback from support tickets, and quarterly business reviews to assess account health. This reactive approach means we typically identify at-risk accounts 30-60 days too late to intervene effectively. The cost of this delay is significant: our trailing twelve-month gross churn rate is 14%, and exit interviews consistently reveal that customers felt their concerns were not addressed in a timely manner. We have data spread across multiple systems — product analytics in Amplitude, support tickets in Zendesk, billing data in Stripe, and CRM notes in Salesforce — but no unified view of account health.\n\nProblem Statement\nCustomer Success lacks a systematic, data-driven method to assess account health in real time. Without a unified health score, CSMs cannot prioritize their book of business effectively, leading to reactive rather than proactive engagement. High-value accounts receive the same attention cadence as low-risk accounts, and early warning signals are missed because they exist in different systems that are not connected. The result is preventable churn, missed expansion opportunities, and inconsistent customer experience across segments.\n\nProposed Solution\nWe propose building a Customer Health Score (CHS) system that aggregates signals from product usage, support interactions, billing patterns, and engagement history into a single composite score per account. The score will be calculated daily and surfaced directly in the CSM dashboard within Salesforce. The scoring model will weight four signal categories: Product Engagement (login frequency, feature adoption depth, usage trend direction) at 35%, Support Sentiment (ticket volume, resolution satisfaction, escalation frequency) at 25%, Commercial Signals (payment timeliness, contract renewal proximity, expansion conversations) at 25%, and Relationship Engagement (QBR attendance, executive sponsor responsiveness, NPS survey participation) at 15%. Each signal category will produce a sub-score on a 0-100 scale, and the composite CHS will be a weighted average. Accounts will be classified into four tiers: Healthy (75-100), Monitor (50-74), At-Risk (25-49), and Critical (0-24). CSMs will receive automated alerts when an account drops below the Monitor threshold or when any single signal category drops more than 20 points in a 14-day window.\n\nSuccess Metrics\nPrimary metric: reduce gross churn rate from 14% to below 10% within two quarters of launch. Secondary metrics: increase proactive outreach to at-risk accounts by 40%, reduce average time-to-intervention from 45 days to under 14 days, and improve CSM confidence score (internal survey) from 3.2 to 4.0 out of 5. We will also track false positive rate on Critical alerts — targeting below 20% false positive rate within the first quarter.\n\nTimeline and Phases\nPhase 1 (Weeks 1-4): Data integration — connect Amplitude, Zendesk, Stripe, and Salesforce data into a unified data warehouse. Build ETL pipelines for daily data refresh. Phase 2 (Weeks 5-8): Scoring model development — build the initial scoring algorithm, backtest against historical churn data to validate predictive accuracy, and tune weights. Phase 3 (Weeks 9-10): Dashboard integration — embed the CHS into the Salesforce CSM dashboard with drill-down capability into sub-scores. Phase 4 (Weeks 11-12): Alert system — build automated alerting for threshold breaches and rapid score declines. Phase 5 (Weeks 13-16): Beta rollout with 10 CSMs covering 400 accounts, gather feedback, iterate on model weights and alert thresholds.\n\nRisks and Mitigations\nData quality risk: Amplitude and Zendesk data may have gaps or inconsistencies. Mitigation: run a 2-week data audit in Phase 1 before building the scoring model. Model accuracy risk: the initial scoring model may produce too many false positives, leading to alert fatigue. Mitigation: start with conservative alert thresholds and widen based on beta feedback. Adoption risk: CSMs may not trust or use the score if it contradicts their intuition. Mitigation: involve 3 senior CSMs as design partners from Phase 2, and frame the score as a supplement to judgment, not a replacement. Integration risk: Salesforce customization may be more complex than estimated. Mitigation: allocate 1 week of buffer in Phase 3 and identify a Salesforce admin as a dedicated resource.\n\nDependencies\nRequires data engineering support (estimated 0.5 FTE for 8 weeks), access to Amplitude raw event data (pending security review), Salesforce admin availability for dashboard customization, and alignment with the CS leadership team on scoring methodology and tier definitions. Also depends on the data warehouse migration project (currently in progress, expected completion Week 2 of this project).\n\nStakeholder Map\nExecutive Sponsor: VP of Customer Success. Informed: CRO, VP of Engineering. Consulted: Head of Data Engineering, Salesforce Admin, 3 Senior CSMs (design partners). Responsible: Product Manager (author), 1 Data Engineer, 1 Full-Stack Engineer.\n\nCompetitive Context\nGainsight and Totango both offer health scoring as part of their CS platforms. However, adopting either would require a 6-month implementation, $120K+ annual licensing, and migration away from our current Salesforce-centered workflow. Building in-house allows us to ship faster, maintain full control over the scoring model, and avoid vendor lock-in. ChurnZero offers a lighter-weight alternative but lacks the Amplitude integration we need for product usage signals.",
+      "criteria": [
+        {
+          "id": "pws-011-c1",
+          "description": "Flags that the document exceeds one-pager length expectations — it is far too long for a one-pager",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-011-c2",
+          "description": "Suggests specific sections to cut or compress to bring the document to an appropriate one-pager length",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-011-c3",
+          "description": "Does NOT polish the document without flagging the length problem as the primary issue",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "pws-012",
+      "name": "Anti-pattern: wall of text",
+      "category": "wall-of-text",
+      "user_message": "Review this product update.",
+      "context": "Q3 has been a productive quarter for the product team and we shipped several important updates including the new dashboard redesign which went live in early August and has already seen a 28% increase in daily active usage compared to the old dashboard and we also launched the API v2 endpoints that enterprise customers have been requesting for months and initial adoption is strong with 43 accounts already migrated and we resolved the long-standing performance issues with the search functionality which was causing timeouts for customers with more than 10,000 records and the fix reduced p95 latency from 4.2 seconds to under 800 milliseconds and on the metrics front our overall NPS improved from 34 to 41 this quarter driven largely by the dashboard improvements and reduced support ticket volume which dropped 18% quarter over quarter and we also onboarded two new engineers to the platform team which will help us tackle the technical debt backlog in Q4 however we are tracking a risk around the data pipeline migration which is running two weeks behind schedule due to unexpected complexity in the legacy schema mapping and this could impact our Q4 roadmap if not resolved by mid-October and speaking of Q4 our top priorities are the billing system overhaul and the mobile app launch and we are also planning to invest in automated testing infrastructure to improve our deployment confidence and reduce the manual QA bottleneck that slowed us down this quarter.",
+      "criteria": [
+        {
+          "id": "pws-012-c1",
+          "description": "Flags the wall of text and lack of structure (no headers, bullets, or paragraph breaks) as the primary problem",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-012-c2",
+          "description": "Suggests breaking the text into sections with headers or bullet points for readability",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "pws-012-c3",
+          "description": "Does NOT only suggest word-level edits without flagging the structural issue",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
     }
   ]
 }

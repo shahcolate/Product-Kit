@@ -1,0 +1,11 @@
+{
+  "name": "pm-interview-prep",
+  "version": "1.0.0",
+  "description": "PM interview coach that runs mock interviews, coaches structured answers, and scores responses across product sense, execution, estimation, and behavioral questions.",
+  "skills": [
+    {
+      "name": "pm-interview-prep",
+      "path": "./skills/pm-interview-prep/SKILL.md"
+    }
+  ]
+}

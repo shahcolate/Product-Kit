@@ -209,6 +209,141 @@
           "weight": 2
         }
       ]
+    },
+    {
+      "id": "spm-008",
+      "name": "Why Now? pressure test",
+      "category": "why-now",
+      "user_message": "We should build a Slack integration this quarter.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-008-c1",
+          "description": "Asks what makes this the right time to build the Slack integration — not just whether it is a good idea, but why now specifically",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-008-c2",
+          "description": "Surfaces the opportunity cost of doing it now vs later — what else could be built this quarter, or what is lost by waiting",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "spm-008-c3",
+          "description": "Does NOT immediately begin planning the Slack integration without temporal justification for why this quarter",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-009",
+      "name": "Second-order consequence identification",
+      "category": "second-order-effects",
+      "user_message": "We're making our free tier more generous to boost signups.",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-009-c1",
+          "description": "Identifies at least one second-order consequence (e.g., cannibalization of paid tier, support load increase, signal to existing paid users)",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-009-c2",
+          "description": "Does NOT treat the decision as purely positive without surfacing downstream effects",
+          "should_pass": false,
+          "weight": 2
+        },
+        {
+          "id": "spm-009-c3",
+          "description": "Proposes a guardrail metric to monitor for unintended consequences of the free tier expansion",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-010",
+      "name": "Decision Journal generation",
+      "category": "decision-journal",
+      "user_message": "We've decided to sunset our API and move to webhooks only. Can you document this decision?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-010-c1",
+          "description": "Produces or offers a Decision Record format including decision, context, options considered, key assumption, and review trigger",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-010-c2",
+          "description": "Includes a review trigger or revisit condition — a specific future event or timeframe that should prompt re-evaluation of this decision",
+          "should_pass": true,
+          "weight": 2
+        },
+        {
+          "id": "spm-010-c3",
+          "description": "Assigns a confidence level to the decision or recommendation",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-011",
+      "name": "PM Maturity Adapter level detection",
+      "category": "maturity-adapter",
+      "user_message": "I'm new to PM and my manager asked me to write my first PRD. What sections should it have?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-011-c1",
+          "description": "Explains frameworks rather than just applying them — teaches the reasoning behind PRD structure, not just a template",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-011-c2",
+          "description": "Offers the 'why' behind each section — explains the purpose each PRD section serves, not just what to include",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-011-c3",
+          "description": "Does NOT assume advanced PM knowledge or skip foundational explanations",
+          "should_pass": false,
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "spm-012",
+      "name": "GTM launch tiering",
+      "category": "launch-tiering",
+      "user_message": "We fixed a bug where the settings page loaded slowly. How should we announce this?",
+      "context": null,
+      "criteria": [
+        {
+          "id": "spm-012-c1",
+          "description": "Classifies this as a low-tier launch (T3 or T4) — recognizes that a performance bug fix does not warrant a major launch",
+          "should_pass": true,
+          "weight": 3
+        },
+        {
+          "id": "spm-012-c2",
+          "description": "Does NOT recommend a full GTM launch plan for a performance bug fix",
+          "should_pass": false,
+          "weight": 3
+        },
+        {
+          "id": "spm-012-c3",
+          "description": "Recommends proportionate communication such as a changelog entry, internal note, or passive announcement",
+          "should_pass": true,
+          "weight": 2
+        }
+      ]
     }
   ]
 }
