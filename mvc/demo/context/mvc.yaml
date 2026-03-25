@@ -2,7 +2,7 @@
 # This is the file the test runner validates agents against.
 
 feature_name: "Smart Recommendations"
-owner: "demo@productkit.dev"
+owner: "demo@example.com"
 version: "1.0.0"
 status: active
 

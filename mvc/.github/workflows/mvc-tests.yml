@@ -18,5 +18,5 @@ jobs:
         run: pip install pyyaml
 
       - name: Run MVC tests
-        working-directory: productkit/demo
+        working-directory: mvc/demo
         run: python mvc_test_runner.py --mvc context/mvc.yaml

@@ -20,7 +20,7 @@ jobs:
         run: pip install pyyaml
 
       - name: Run drift evaluation
-        working-directory: productkit/demo
+        working-directory: mvc/demo
         run: python mvc_test_runner.py --mvc context/mvc.yaml
 
       - name: Upload drift report
@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: drift-report-${{ github.run_id }}
-          path: productkit/demo/drift-report-*.json
+          path: mvc/demo/drift-report-*.json
           if-no-files-found: ignore
 
       # Uncomment to send Slack notification on failure:

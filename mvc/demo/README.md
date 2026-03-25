@@ -10,7 +10,7 @@ Validates two mock agents against a single MVC spec. GoodAgent follows the contr
 ## Run it
 
 ```bash
-cd productkit/demo
+cd mvc/demo
 python mvc_test_runner.py
 ```
 

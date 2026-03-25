@@ -1,4 +1,4 @@
-# ProductKit -- Minimal Viable Context for AI Features
+# MVC -- Minimal Viable Context for AI Features
 
 **Minimal Viable Context (MVC)** is the smallest set of product decisions an AI agent needs before it can act on behalf of a user. It replaces the traditional PRD with a structured, testable spec written in YAML. [Read the original article.](https://shahai.substack.com/p/the-new-prd)
 
@@ -38,7 +38,7 @@ The demo validates two mock agents -- GoodAgent (follows the contract) and BadAg
 ## Repo layout
 
 ```
-productkit/
+mvc/
   templates/           Blank MVC template + worked examples
   demo/                Test runner, mock agents, sample MVC
   tests/               Contract, behavioral, boundary, drift test specs

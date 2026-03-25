@@ -225,14 +225,14 @@ PRDs were designed for deterministic software. AI agents need something differen
 
 **MVC is the smallest set of product decisions an AI agent needs before it can act on behalf of a user.** It's a structured YAML template covering five components: objective + non-goals, constraints, acceptance tests, tools & boundaries, and canonical examples. One file, testable in CI, readable by humans.
 
-The [`productkit/`](productkit/) directory contains everything you need to adopt MVC:
+The [`mvc/`](mvc/) directory contains everything you need to adopt MVC:
 
-- **Blank template** — copy [`templates/mvc-template.yaml`](productkit/templates/mvc-template.yaml) and fill it in
-- **Worked examples** — [AI recommendations](productkit/templates/mvc-example-recommendations.yaml) (full MVC) and [payment migration](productkit/templates/mvc-example-backend-migration.yaml) (stripped-down, no designer)
-- **Demo** — test runner that validates mock agents against an MVC spec ([run it](productkit/demo/))
+- **Blank template** — copy [`templates/mvc-template.yaml`](mvc/templates/mvc-template.yaml) and fill it in
+- **Worked examples** — [AI recommendations](mvc/templates/mvc-example-recommendations.yaml) (full MVC) and [payment migration](mvc/templates/mvc-example-backend-migration.yaml) (stripped-down, no designer)
+- **Demo** — test runner that validates mock agents against an MVC spec ([run it](mvc/demo/))
 - **Test patterns** — contract, behavioral, boundary, and drift detection specs
 - **CI workflows** — GitHub Actions for PR tests and weekly drift detection
-- **Docs** — [4-week onboarding guide](productkit/docs/getting-started.md), [RACI table](productkit/docs/raci.md), [solo builder guidance](productkit/docs/when-no-designer.md)
+- **Docs** — [4-week onboarding guide](mvc/docs/getting-started.md), [RACI table](mvc/docs/raci.md), [solo builder guidance](mvc/docs/when-no-designer.md)
 
 > **[Read the original article: The New PRD](https://shahai.substack.com/p/the-new-prd)**
 
@@ -300,9 +300,9 @@ Rate-limited to 5 teardowns/day to manage API costs.
 ## Repo Structure
 
 ```
-productkit/
+Product-Kit/
 ├── README.md                              # You're here
-├── productkit/                            # MVC templates, demo, tests, and docs
+├── mvc/                                   # MVC templates, demo, tests, and docs
 ├── CONTRIBUTING.md                        # How to contribute plugins and skills
 ├── CHANGELOG.md                           # Version history
 ├── LICENSE                                # MIT
