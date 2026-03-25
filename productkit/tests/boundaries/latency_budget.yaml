@@ -1,0 +1,37 @@
+# Boundary Test -- Latency Budget
+# 10k requests, no single request may exceed 500ms.
+
+test_suite: boundary
+feature: "Smart Recommendations"
+mvc_ref: "constraints.performance.latency"
+
+constraint:
+  name: "latency_budget"
+  limit: "p99 < 200ms, absolute max 500ms"
+  measurement: "wall-clock time from request receipt to response sent"
+
+test_cases:
+  - name: "p99_under_200ms"
+    given: "10,000 requests with realistic user distribution"
+    when: "load test completes"
+    then: "p99 latency < 200ms"
+
+  - name: "no_request_over_500ms"
+    given: "10,000 requests with realistic user distribution"
+    when: "load test completes"
+    then: "zero requests with latency > 500ms"
+
+  - name: "cold_start_within_budget"
+    given: "1,000 requests from new users (no cached embeddings)"
+    when: "load test completes"
+    then: "p99 latency < 200ms (cold-start users are not exempt)"
+
+  - name: "fallback_faster_than_primary"
+    given: "primary scoring path unavailable, fallback active"
+    when: "1,000 requests served by fallback"
+    then: "p99 latency < 50ms (static list lookup)"
+
+notes: >
+  The recommendation block is above the fold on mobile. Latency beyond
+  200ms delays the entire page paint. The fallback path must be faster
+  than the primary path, not slower.

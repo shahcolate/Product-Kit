@@ -1,0 +1,23 @@
+# Behavioral Test -- Cold Start
+# New user with no history gets popular items fallback.
+
+test_suite: behavioral
+feature: "Smart Recommendations"
+scenario: cold_start
+
+input:
+  user_id: "brand-new-user"
+  page_context: "home"
+  has_browse_history: false
+  has_purchase_history: false
+
+assertions:
+  - output is a list of exactly 5 items
+  - each item has sku, product_name, reason, confidence_score
+  - reasons reference popularity or trending signals, not personal history
+  - items are drawn from pre-computed regional trending list
+
+notes: >
+  Cold start is the most common failure mode for recommendation systems.
+  The agent must never return an empty list or error. Graceful degradation
+  to trending items is required.

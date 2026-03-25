@@ -1,0 +1,54 @@
+# Drift Detection -- Weekly Evaluation
+# Runs every Monday at 06:00 UTC. Catches silent quality degradation.
+
+test_suite: drift
+feature: "Smart Recommendations"
+mvc_ref: "telemetry, canonical_examples"
+
+schedule:
+  cadence: "weekly"
+  day: "monday"
+  time: "06:00 UTC"
+  also_on: "every model or embedding deploy"
+
+eval_config:
+  dataset: "tests/golden/recommendations_golden_set.yaml"
+  sample_size: 200
+  comparison: "current agent output vs. golden expected output"
+
+checks:
+  - name: "fallback_rate_under_ceiling"
+    description: "Fallback (non-personalized) rate must stay below 40%"
+    metric: "fallback_rate"
+    assertion:
+      type: less_than
+      value: 0.40
+    notes: "If > 40% of users get trending instead of personalized, something is wrong upstream."
+
+  - name: "reason_length_minimum"
+    description: "Every reason field must be longer than 15 characters"
+    metric: "min_reason_length"
+    assertion:
+      type: greater_than
+      value: 15
+    notes: "Short or empty reasons indicate the explainability pipeline is degraded."
+
+  - name: "conversion_lift_positive"
+    description: "Recommendation-driven conversion must exceed baseline by > 5%"
+    metric: "conversion_lift_vs_control"
+    assertion:
+      type: greater_than
+      value: 0.05
+    notes: "If the lift disappears, the model may have drifted or the feature store may be stale."
+
+  - name: "contract_compliance"
+    description: "100% of eval outputs must pass contract tests"
+    metric: "contract_pass_rate"
+    assertion:
+      type: equals
+      value: 1.0
+
+alerting:
+  channel: "#rec-alerts"
+  escalation: "page on-call if any check fails 2 consecutive weeks"
+  report: "drift-report-{date}.json uploaded to S3"

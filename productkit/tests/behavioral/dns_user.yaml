@@ -1,0 +1,28 @@
+# Behavioral Test -- CCPA Do-Not-Sell User
+# DNS user gets recommendations without cross-site personalization signals.
+
+test_suite: behavioral
+feature: "Smart Recommendations"
+scenario: dns_user
+
+input:
+  user_id: "dns-opted-out-user"
+  page_context: "home"
+  has_browse_history: true
+  has_purchase_history: true
+  privacy_flags:
+    do_not_sell: true
+
+assertions:
+  - output is a list of exactly 5 items
+  - each item has sku, product_name, reason, confidence_score
+  - only first-party on-site behavioral signals used
+  - no third-party data enrichment in pipeline
+  - no cross-site tracking signals in recommendation logic
+  - reasons do not reference cross-site behavior
+
+notes: >
+  This is a compliance requirement, not a product decision. Failing this
+  test is a CCPA violation. The agent should degrade to first-party-only
+  personalization or fall back to trending items. It must never return
+  empty or error out for DNS users.
