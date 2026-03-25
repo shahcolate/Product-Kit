@@ -1,0 +1,178 @@
+# =============================================================================
+# Minimal Viable Context (MVC) Template
+# =============================================================================
+# The smallest set of product decisions an AI agent needs before it can act.
+# Copy this file, fill in each section, and use it to drive tests and evals.
+#
+# Guide: https://shahai.substack.com/p/the-new-prd
+# =============================================================================
+
+
+# --- Metadata ----------------------------------------------------------------
+# Basic identification. Bump version when the contract changes.
+
+feature_name: "<your feature name>"       # Human-readable (e.g., "Smart Recommendations")
+owner: "<team or person>"                 # Who is accountable (e.g., "rec-team@acme.com")
+version: "0.1.0"                          # Semver. Bump major on breaking contract changes.
+status: draft                             # draft | review | active | deprecated
+last_updated: "<YYYY-MM-DD>"
+
+
+# =============================================================================
+# 1. OBJECTIVE + NON-GOALS
+# =============================================================================
+# What the agent does -- and explicitly what it doesn't.
+# Non-goals are often more important than goals. They prevent scope hallucination.
+
+objective:
+  statement: "<what the agent should accomplish, in one sentence>"
+  # Example: "Surface 5 relevant product recommendations per session"
+
+  success_criteria:
+    # Measurable outcomes that define "working." Be specific with numbers and timeframes.
+    - metric: "<metric name>"             # e.g., "add-to-cart rate"
+      target: "<target value>"            # e.g., "increase by 15% within 90 days"
+      measurement: "<how you measure it>" # e.g., "analytics event cart_add / rec_impression"
+
+  non_goals:
+    # Things the agent must NOT do. List these before you ship.
+    # Each non-goal prevents a category of scope creep or misuse.
+    - "<thing the agent must not attempt>"
+    - "<another thing explicitly out of scope>"
+
+
+# =============================================================================
+# 2. CONSTRAINTS
+# =============================================================================
+# Hard limits. These are circuit breakers, not aspirational targets.
+
+constraints:
+  compliance:
+    # Regulatory and legal requirements that affect data handling.
+    - "<regulation or standard>"          # e.g., "GDPR", "CCPA", "SOC 2", "PCI DSS"
+
+  performance:
+    latency: "<SLA>"                      # e.g., "p99 < 200ms"
+    cost_per_request: "<ceiling>"         # e.g., "< $0.002 per request"
+    throughput: "<if applicable>"         # e.g., "10k req/s sustained"
+
+  data_restrictions:
+    # Data the agent must never read, store, or return.
+    - "<restricted data category>"        # e.g., "payment card numbers"
+    - "<another restriction>"
+
+
+# =============================================================================
+# 3. ACCEPTANCE TESTS
+# =============================================================================
+# Concrete, falsifiable scenarios. If you can't write the test, you haven't
+# defined the feature. Group by type: functional, performance, experience.
+
+acceptance_tests:
+  functional:
+    # Core behavior the agent must exhibit.
+    - name: "<test name>"                 # e.g., "returns_five_recommendations"
+      given: "<precondition>"             # e.g., "returning user with 30-day history"
+      when: "<trigger>"                   # e.g., "user loads home screen"
+      then: "<expected outcome>"          # e.g., "agent returns exactly 5 items"
+
+  performance:
+    # Latency, cost, throughput under load.
+    - name: "<test name>"
+      given: "<load condition>"
+      when: "<trigger>"
+      then: "<performance assertion>"
+
+  experience:
+    # User-facing quality. Omit this section for purely technical features.
+    - name: "<test name>"
+      given: "<user context>"
+      when: "<trigger>"
+      then: "<quality assertion>"
+
+
+# =============================================================================
+# 4. TOOLS AND BOUNDARIES
+# =============================================================================
+# What the agent can access, and what it cannot.
+
+tools_and_boundaries:
+  allowed_sources:
+    # Every data source the agent may read from.
+    - name: "<source name>"               # e.g., "product_catalog"
+      type: "<api | database | event_stream | file | embedding | feature_store>"
+      description: "<what it contains>"
+      freshness: "<staleness tolerance>"  # e.g., "real-time", "< 1 hour", "daily batch"
+      permissions: "<read | read-write>"
+
+  forbidden_sources:
+    # Data the agent must never access, even if technically available.
+    - name: "<source name>"
+      reason: "<why it's forbidden>"      # e.g., "contains PII", "PCI scope"
+
+  api_permissions:
+    # External APIs the agent may call and at what rate.
+    - name: "<API name>"
+      allowed_operations: ["<op>"]        # e.g., ["read_catalog", "get_embeddings"]
+      rate_limit: "<if applicable>"
+
+  fallback_behavior: "<what happens when the agent fails or a source is unavailable>"
+  # Example: "Return pre-computed trending items list (refreshed hourly)"
+
+
+# =============================================================================
+# 5. CANONICAL EXAMPLES
+# =============================================================================
+# Worked input/output pairs. These anchor behavior and serve as golden eval data.
+
+canonical_examples:
+  - name: "<scenario name>"               # e.g., "returning_user"
+    description: "<one sentence>"
+    input:
+      # The exact input the agent receives in this scenario.
+      user_id: "<example>"
+      context: "<example>"
+    expected_output:
+      # The shape and content of a correct response.
+      # Be specific enough that a test can verify it.
+      format: "<description>"
+      item_count: "<number>"
+      properties: ["<required field>"]
+    notes: "<why this example matters>"
+
+
+# =============================================================================
+# OPERATIONAL METADATA
+# =============================================================================
+# Telemetry, decision records, and versioning. These sections support ongoing
+# operation after launch.
+
+telemetry:
+  # What to monitor in production. Each entry becomes a dashboard panel or alert.
+  metrics:
+    - name: "<metric>"                    # e.g., "fallback_rate"
+      description: "<what it measures>"
+      alert_threshold: "<when to page>"   # e.g., "> 40% for 15 minutes"
+      dashboard: "<where to find it>"
+  logging:
+    # What the agent should log for debugging and audit.
+    - "<log event>"                       # e.g., "request/response pairs with latency"
+    - "<another log event>"
+
+decision_records:
+  # Architectural decisions that shaped this MVC. Helps future readers understand
+  # why the spec looks the way it does.
+  - date: "<YYYY-MM-DD>"
+    decision: "<what was decided>"
+    rationale: "<why>"
+    alternatives_considered:
+      - "<option that was rejected and why>"
+
+versioning:
+  # How this MVC evolves over time.
+  changelog:
+    - version: "0.1.0"
+      date: "<YYYY-MM-DD>"
+      changes: "<what changed>"
+  review_cadence: "<how often this MVC is reviewed>"  # e.g., "every sprint", "monthly"
+  deprecation_policy: "<when and how to retire this MVC>"

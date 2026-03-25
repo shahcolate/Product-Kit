@@ -1,0 +1,284 @@
+# =============================================================================
+# MVC Example -- AI-Powered Product Recommendations
+# =============================================================================
+# A complete, filled-in MVC for an e-commerce recommendation feature.
+# Use this as a reference when filling in the blank template.
+#
+# Guide: https://shahai.substack.com/p/the-new-prd
+# =============================================================================
+
+
+feature_name: "Smart Recommendations"
+owner: "rec-team@acme.com"
+version: "1.2.0"
+status: active
+last_updated: "2026-03-15"
+
+
+# =============================================================================
+# 1. OBJECTIVE + NON-GOALS
+# =============================================================================
+
+objective:
+  statement: "Surface 5 relevant product recommendations per session to increase add-to-cart rate by 15% within 90 days"
+
+  success_criteria:
+    - metric: "add-to-cart rate from recommendations"
+      target: "increase by 15% vs. control group within 90 days"
+      measurement: "analytics event cart_add where source=recommendation / rec_impression"
+    - metric: "recommendation CTR"
+      target: ">= 12%"
+      measurement: "rec_click / rec_impression, tracked per session"
+
+  # These non-goals were the source of the most scope creep in early design.
+  # Each one was explicitly debated and rejected.
+  non_goals:
+    - "Do not build a search engine -- recommendations are passive, not query-driven"
+    - "Do not personalize on demographics (age, gender, location) -- behavior signals only"
+    - "Do not optimize for session duration -- we optimize for purchase intent, not engagement"
+    - "Do not recommend out-of-stock or recalled items"
+
+
+# =============================================================================
+# 2. CONSTRAINTS
+# =============================================================================
+
+constraints:
+  compliance:
+    - "GDPR -- right to erasure must propagate to recommendation model within 72 hours"
+    - "CCPA -- honor do-not-sell (DNS) flag; no cross-site behavioral signals for DNS users"
+    - "SOC 2 Type II -- all data access auditable, no PII in recommendation payloads"
+
+  performance:
+    latency: "p99 < 200ms end-to-end"
+    # Cost ceiling is tight because at 2M daily sessions, $0.002 = $4k/day.
+    # We chose embedding lookup over LLM inference to hit this target.
+    cost_per_request: "< $0.002 (embedding lookup + scoring, no LLM inference in hot path)"
+    throughput: "sustain 500 req/s at peak (Black Friday baseline)"
+
+  data_restrictions:
+    - "No PII (name, email, address, phone) in recommendation request or response payloads"
+    - "No payment or billing data used as recommendation signals"
+    - "No health-related browsing categories used as signals"
+
+
+# =============================================================================
+# 3. ACCEPTANCE TESTS
+# =============================================================================
+# 4 functional, 2 performance, 2 experience.
+
+acceptance_tests:
+  functional:
+    - name: "returns_five_recommendations"
+      given: "returning user with >= 7 days of browsing history"
+      when: "user loads home screen"
+      then: "response contains exactly 5 items, each with sku, product_name, reason, confidence_score"
+
+    - name: "cold_start_fallback"
+      given: "new user with no browsing or purchase history"
+      when: "user loads home screen"
+      then: "response contains 5 trending items from pre-computed regional list"
+
+    - name: "cart_exclusion"
+      given: "user has SKU-1001 in cart"
+      when: "user loads home screen"
+      then: "SKU-1001 does not appear in recommendations"
+
+    # This test exists because of a pre-launch legal review.
+    # DNS users must get recommendations, but only from first-party on-site signals.
+    - name: "ccpa_dns_compliance"
+      given: "user with do_not_sell=true flag"
+      when: "user loads home screen"
+      then: "response uses only first-party on-site behavioral signals; no cross-site data"
+
+  performance:
+    - name: "latency_under_sla"
+      given: "500 concurrent requests"
+      when: "load test runs for 10 minutes"
+      then: "p99 latency < 200ms, no single request > 500ms"
+
+    - name: "cost_under_ceiling"
+      given: "1000 sequential requests"
+      when: "cost tracker aggregates"
+      then: "average cost per request < $0.002"
+
+  experience:
+    - name: "reason_is_explanatory"
+      given: "returning user with diverse history"
+      when: "recommendations render"
+      then: "each item's reason field is a human-readable sentence (> 15 chars) referencing user behavior"
+
+    - name: "category_diversity"
+      given: "user who browses mainly electronics"
+      when: "recommendations render"
+      then: ">= 3 unique product categories across 5 recommendations"
+
+
+# =============================================================================
+# 4. TOOLS AND BOUNDARIES
+# =============================================================================
+
+tools_and_boundaries:
+  allowed_sources:
+    - name: "product_catalog"
+      type: api
+      description: "Product metadata: SKU, name, category, price, availability, image URL"
+      freshness: "real-time (inventory updates within 60s)"
+      permissions: read
+
+    - name: "user_behavior_events"
+      type: event_stream
+      description: "Clickstream from last 90 days: page views, searches, add-to-cart, purchases"
+      freshness: "real-time (< 30s lag)"
+      permissions: read
+
+    - name: "product_embeddings"
+      type: feature_store
+      description: "Pre-computed 256-dim vectors for semantic similarity. Refreshed nightly."
+      freshness: "daily batch (02:00 UTC)"
+      permissions: read
+
+    - name: "user_feature_vectors"
+      type: feature_store
+      description: "Aggregated user preference vectors computed from behavior events"
+      freshness: "updated every 15 minutes"
+      permissions: read
+
+  forbidden_sources:
+    # These were tempting during design. Explicitly forbidden to prevent future creep.
+    - name: "user_profile_db"
+      reason: "Contains PII (name, email, address). Recommendation payloads must be PII-free."
+    - name: "payment_service"
+      reason: "PCI DSS scope. Recommendation agent has no business reason to access payment data."
+    - name: "third_party_data_enrichment"
+      reason: "CCPA/GDPR risk. All personalization must use first-party behavioral data only."
+
+  api_permissions:
+    - name: "catalog_service"
+      allowed_operations: ["get_product", "list_products_by_category", "check_availability"]
+      rate_limit: "1000 req/s"
+    - name: "feature_store"
+      allowed_operations: ["get_embedding", "get_user_vector"]
+      rate_limit: "2000 req/s"
+
+  fallback_behavior: >
+    If the agent fails, times out, or a required source is unavailable, return the
+    pre-computed "trending in your region" list (static, refreshed hourly). Log the
+    failure reason. Never return an empty response or an error to the user.
+
+
+# =============================================================================
+# 5. CANONICAL EXAMPLES
+# =============================================================================
+
+canonical_examples:
+  - name: "returning_user"
+    description: "User with 30 days of browsing history gets personalized recommendations"
+    input:
+      user_id: "usr-42819"
+      page_context: "home"
+      has_browse_history: true
+      has_purchase_history: true
+    expected_output:
+      format: "JSON array"
+      item_count: 5
+      properties: ["sku", "product_name", "reason", "confidence_score"]
+      constraints:
+        - "confidence_score between 0.0 and 1.0"
+        - "reason references user behavior (e.g., 'based on your recent purchases')"
+        - ">= 3 unique categories"
+        - "no items currently in user's cart"
+    notes: "This is the primary experience. If this fails, the feature is broken."
+
+  - name: "new_user_cold_start"
+    description: "Brand-new user with zero history gets trending fallback"
+    input:
+      user_id: "usr-new-00001"
+      page_context: "home"
+      has_browse_history: false
+      has_purchase_history: false
+    expected_output:
+      format: "JSON array"
+      item_count: 5
+      properties: ["sku", "product_name", "reason", "confidence_score"]
+      constraints:
+        - "reason references popularity, not personal history"
+        - "items drawn from regional trending list"
+    notes: "Cold start is the most common failure mode. Agent must never return empty."
+
+  - name: "dns_user"
+    description: "CCPA do-not-sell user gets recommendations without cross-site signals"
+    input:
+      user_id: "usr-dns-07734"
+      page_context: "home"
+      has_browse_history: true
+      privacy_flags:
+        do_not_sell: true
+    expected_output:
+      format: "JSON array"
+      item_count: 5
+      properties: ["sku", "product_name", "reason", "confidence_score"]
+      constraints:
+        - "only first-party on-site signals used"
+        - "no third-party data enrichment"
+        - "reason does not reference cross-site behavior"
+    notes: "Legal requirement. Failing this test is a compliance violation, not a bug."
+
+
+# =============================================================================
+# OPERATIONAL METADATA
+# =============================================================================
+
+telemetry:
+  metrics:
+    - name: "recommendation_ctr"
+      description: "Click-through rate on recommended items"
+      alert_threshold: "drops > 2pp week-over-week"
+      dashboard: "grafana.internal/d/rec-health"
+    - name: "fallback_rate"
+      description: "Percentage of requests served by fallback instead of personalization"
+      alert_threshold: "> 40% for 15 minutes"
+      dashboard: "grafana.internal/d/rec-health"
+    - name: "p99_latency"
+      description: "99th percentile end-to-end latency"
+      alert_threshold: "> 200ms for 5 minutes"
+      dashboard: "grafana.internal/d/rec-health"
+  logging:
+    - "request/response pairs with latency (PII-scrubbed)"
+    - "fallback triggers with reason codes"
+    - "feature store cache hit/miss ratio"
+
+decision_records:
+  - date: "2026-01-15"
+    decision: "Use embedding similarity instead of LLM inference in the hot path"
+    rationale: "LLM inference costs $0.02/request. At 2M daily sessions that's $40k/day. Embeddings hit the $0.002 ceiling."
+    alternatives_considered:
+      - "LLM-based ranking -- rejected due to cost and latency (p99 ~800ms)"
+      - "Collaborative filtering only -- rejected because cold-start performance was poor"
+
+  - date: "2026-02-01"
+    decision: "Exclude demographics from personalization signals"
+    rationale: "Legal flagged demographic targeting as a CCPA/GDPR gray area. Behavioral signals alone hit our CTR target in A/B test."
+    alternatives_considered:
+      - "Age + gender bucketing -- rejected after legal review"
+
+  - date: "2026-02-20"
+    decision: "Static regional trending list as fallback instead of random items"
+    rationale: "Random fallback had 2% CTR. Regional trending hit 8%. Worth the hourly batch job."
+    alternatives_considered:
+      - "Random selection from catalog -- rejected due to low engagement"
+      - "Empty response -- rejected because it breaks the UI layout"
+
+versioning:
+  changelog:
+    - version: "1.0.0"
+      date: "2026-02-01"
+      changes: "Initial MVC. 5 recommendations, embedding-based scoring, trending fallback."
+    - version: "1.1.0"
+      date: "2026-02-20"
+      changes: "Added CCPA DNS test case and forbidden third-party data enrichment source."
+    - version: "1.2.0"
+      date: "2026-03-15"
+      changes: "Added cart exclusion test. Tightened cost ceiling from $0.01 to $0.002."
+  review_cadence: "every sprint (bi-weekly)"
+  deprecation_policy: "Deprecated MVCs are archived in docs/deprecated/ with a pointer to the replacement."

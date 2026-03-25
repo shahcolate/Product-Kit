@@ -1,0 +1,41 @@
+name: MVC Weekly Drift Detection
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  drift-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run drift evaluation
+        working-directory: productkit/demo
+        run: python mvc_test_runner.py --mvc context/mvc.yaml
+
+      - name: Upload drift report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report-${{ github.run_id }}
+          path: productkit/demo/drift-report-*.json
+          if-no-files-found: ignore
+
+      # Uncomment to send Slack notification on failure:
+      # - name: Notify on failure
+      #   if: failure()
+      #   uses: slackapi/slack-github-action@v2
+      #   with:
+      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+      #     payload: |
+      #       {"text": "MVC drift detection failed. Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}

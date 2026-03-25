@@ -1,0 +1,59 @@
+# Contract Test -- Recommendation Response Shape
+# Validates that agent output conforms to the MVC output format.
+# Run on every PR. Any failure blocks merge.
+
+test_suite: contract
+feature: "Smart Recommendations"
+mvc_ref: "tools_and_boundaries, acceptance_tests.functional"
+
+tests:
+  - name: "output_is_array"
+    description: "Response must be a JSON array"
+    assertion:
+      type: isinstance
+      expected: list
+
+  - name: "array_has_five_items"
+    description: "Array must contain exactly 5 recommendation objects"
+    assertion:
+      type: length
+      expected: 5
+
+  - name: "each_item_has_required_keys"
+    description: "Every item must include sku, product_name, reason, confidence_score"
+    assertion:
+      type: keys_present
+      expected:
+        - sku
+        - product_name
+        - reason
+        - confidence_score
+
+  - name: "confidence_score_in_range"
+    description: "confidence_score must be a float between 0.0 and 1.0 inclusive"
+    assertion:
+      type: range
+      field: confidence_score
+      min: 0.0
+      max: 1.0
+
+  - name: "no_pii_leakage"
+    description: "Items must not contain PII fields"
+    assertion:
+      type: keys_absent
+      expected:
+        - email
+        - phone
+        - address
+        - ssn
+        - name
+        - date_of_birth
+        - ip_address
+
+  - name: "reason_is_explanatory"
+    description: "Each item's reason field must be a non-empty string longer than 15 characters"
+    assertion:
+      type: min_length
+      field: reason
+      value: 15
+    notes: "Explainability is a product requirement, not a nice-to-have. Users see the reason text."

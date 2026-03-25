@@ -1,0 +1,61 @@
+# MVC for the demo — Smart Recommendations
+# This is the file the test runner validates agents against.
+
+feature_name: "Smart Recommendations"
+owner: "demo@productkit.dev"
+version: "1.0.0"
+status: active
+
+problem:
+  persona: "Casual mobile shopper"
+  job_to_be_done: "Discover relevant products without effort"
+  current_pain: "Generic top-sellers carousel is ignored by most users"
+  hypothesis: "Personalized recs will lift PDP visits by 20% and conversion by 3pp"
+
+agent_behavior:
+  role: "Generate ranked product recommendations from user history"
+  trigger: "User loads home screen or PDP"
+  input_summary: "user_id, page_context, browsing events (90d), purchase history (12m)"
+  output_format: "JSON array of exactly 5 objects: product_id, product_name, reason, confidence_score (0–1)"
+  out_of_scope:
+    - "Must not modify prices"
+    - "Must not access payment information"
+    - "Must not recommend recalled or out-of-stock products"
+
+success_metrics:
+  primary_metric:
+    name: "recommendation CTR"
+    target: ">= 12%"
+    measurement: "rec_click events / rec_impression events"
+  guardrail_metrics:
+    - name: "page load time"
+      threshold: "p95 < 400ms"
+    - name: "recommendation diversity"
+      threshold: ">= 3 unique categories in 5 items"
+
+context_sources:
+  - name: "user_browse_events"
+    type: event_stream
+    description: "Clickstream from last 90 days"
+    freshness: "real-time"
+  - name: "user_purchase_history"
+    type: database
+    description: "Orders from last 12 months"
+    freshness: "< 1 hour"
+  - name: "product_catalog"
+    type: api
+    description: "Product metadata with availability"
+    freshness: "real-time"
+
+boundaries:
+  cost_ceiling: "$0.03 per request"
+  latency_budget: "p95 < 200ms"
+  data_restrictions:
+    - "No PII in recommendation payloads"
+  fallback_behavior: "Return trending-in-region static list on failure"
+
+drift_detection:
+  eval_cadence: "weekly"
+  eval_dataset: "tests/golden/recommendations_golden_set.yaml"
+  regression_threshold: "CTR drops > 2pp week-over-week"
+  alert_channel: "#rec-alerts"

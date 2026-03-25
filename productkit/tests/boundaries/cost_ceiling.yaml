@@ -1,0 +1,31 @@
+# Boundary Test -- Cost Ceiling
+# Load test: average cost must stay under $0.002 per request.
+
+test_suite: boundary
+feature: "Smart Recommendations"
+mvc_ref: "constraints.performance.cost_per_request"
+
+constraint:
+  name: "cost_ceiling"
+  limit: "$0.002 per request"
+  measurement: "embedding lookup + scoring cost, aggregated per invocation"
+
+test_cases:
+  - name: "single_request_under_ceiling"
+    given: "single recommendation request"
+    when: "cost tracker records inference cost"
+    then: "total_cost_usd < 0.002"
+
+  - name: "average_cost_under_ceiling"
+    given: "1000 sequential requests with varied user profiles"
+    when: "cost tracker aggregates"
+    then: "average cost per request < $0.002"
+
+  - name: "latency_under_sla"
+    given: "500 concurrent requests sustained for 10 minutes"
+    when: "load test completes"
+    then: "p99 < 200ms, no single request > 500ms"
+
+notes: >
+  At 2M daily sessions, a $0.001 overage per request adds $2k/day.
+  Run this test on every model change, embedding refresh, or infra update.

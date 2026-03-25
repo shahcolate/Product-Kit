@@ -1,0 +1,244 @@
+# =============================================================================
+# MVC Example -- Payment Processing Migration (Technical Feature)
+# =============================================================================
+# A stripped-down MVC for a purely technical feature. No experience constraints.
+# No design owner. This shows that MVC scales down -- not every section needs
+# to be heavy. If a section doesn't apply, say so and move on.
+#
+# Guide: https://shahai.substack.com/p/the-new-prd
+# =============================================================================
+
+
+feature_name: "Payment Processing Migration: Monolith to Microservice"
+owner: "payments-platform@acme.com"
+version: "1.0.0"
+status: active
+last_updated: "2026-03-10"
+
+
+# =============================================================================
+# 1. OBJECTIVE + NON-GOALS
+# =============================================================================
+
+objective:
+  statement: "Migrate payment processing from the monolith to a standalone microservice with zero downtime and zero data loss"
+
+  success_criteria:
+    - metric: "data loss"
+      target: "zero -- every transaction processed in monolith must appear in microservice"
+      measurement: "dual-write parity check: row count + checksum comparison over 14-day window"
+    - metric: "downtime"
+      target: "zero -- no user-visible payment failures during migration"
+      measurement: "payment_error_rate in Datadog, compared to 30-day pre-migration baseline"
+    - metric: "rollback capability"
+      target: "full rollback to monolith within 5 minutes"
+      measurement: "timed rollback drill, executed weekly during dual-write phase"
+
+  # These non-goals were explicitly discussed with stakeholders to prevent scope expansion.
+  non_goals:
+    - "Do not redesign the payment API -- same endpoints, same contracts, different backend"
+    - "Do not migrate billing or invoicing -- those stay in the monolith for now"
+    - "Do not optimize payment processing latency -- match current performance, don't improve it"
+    - "Do not add new payment methods during migration"
+
+
+# =============================================================================
+# 2. CONSTRAINTS
+# =============================================================================
+
+constraints:
+  compliance:
+    - "PCI DSS Level 1 -- microservice must pass PCI audit before handling live traffic"
+    - "SOX -- all payment data changes must be auditable with immutable log"
+
+  performance:
+    latency: "p99 must not regress beyond current monolith baseline (p99 < 350ms)"
+    cost_per_request: "N/A -- infrastructure cost tracked monthly, not per-request"
+    throughput: "sustain current peak: 2000 payment transactions/minute"
+
+  data_restrictions:
+    - "Payment card data encrypted at rest (AES-256) and in transit (TLS 1.3)"
+    - "PAN must never appear in logs, even during dual-write phase"
+    - "Microservice must not have read access to non-payment tables in monolith DB"
+
+  # Migration-specific constraints that don't fit neatly into the standard categories.
+  migration_specific:
+    backward_compatibility: "All existing API clients must work without changes during and after migration"
+    dual_write_period: "14 days minimum -- both monolith and microservice process every transaction"
+    rollback_sla: "Full rollback to monolith within 5 minutes at any point during dual-write"
+    feature_freeze: "No payment feature changes during dual-write phase"
+
+
+# =============================================================================
+# 3. ACCEPTANCE TESTS
+# =============================================================================
+# No experience tests -- this is a backend migration with no user-facing changes.
+
+acceptance_tests:
+  functional:
+    - name: "regression_suite_passes"
+      given: "existing payment API test suite (847 cases)"
+      when: "run against microservice endpoint"
+      then: "100% pass rate -- zero regressions"
+
+    - name: "dual_write_parity"
+      given: "14-day dual-write phase with live traffic"
+      when: "parity checker runs hourly"
+      then: "zero mismatches between monolith and microservice records"
+
+    - name: "rollback_within_sla"
+      given: "microservice is handling live traffic"
+      when: "rollback triggered (manual or automated)"
+      then: "all traffic routes to monolith within 5 minutes, zero failed transactions during switch"
+
+    - name: "api_contract_unchanged"
+      given: "OpenAPI spec from monolith payment endpoints"
+      when: "diff against microservice OpenAPI spec"
+      then: "zero breaking changes -- same paths, methods, request/response schemas"
+
+  performance:
+    - name: "latency_no_regression"
+      given: "sustained load at 2000 txn/min for 30 minutes"
+      when: "load test against microservice"
+      then: "p99 < 350ms (matching monolith baseline)"
+
+    - name: "dual_write_overhead_acceptable"
+      given: "dual-write mode active"
+      when: "load test at peak traffic"
+      then: "additional latency from dual-write < 50ms at p99"
+
+
+# =============================================================================
+# 4. TOOLS AND BOUNDARIES
+# =============================================================================
+
+tools_and_boundaries:
+  allowed_sources:
+    - name: "payment_transactions_table"
+      type: database
+      description: "Core transaction records (amount, currency, status, timestamps)"
+      freshness: "real-time"
+      permissions: read-write
+
+    - name: "payment_gateway_api"
+      type: api
+      description: "Stripe/Adyen gateway for charge, refund, capture operations"
+      freshness: "real-time"
+      permissions: read-write
+
+    - name: "idempotency_store"
+      type: database
+      description: "Redis-backed idempotency keys to prevent duplicate charges"
+      freshness: "real-time"
+      permissions: read-write
+
+  forbidden_sources:
+    - name: "user_profile_db"
+      reason: "Microservice handles payments only. User data stays in monolith."
+    - name: "billing_invoicing_tables"
+      reason: "Out of scope for this migration. Accessing them would expand the blast radius."
+    - name: "monolith_db_direct"
+      reason: "Microservice must use APIs, not direct DB queries, to avoid coupling."
+
+  api_permissions:
+    - name: "payment_gateway"
+      allowed_operations: ["charge", "capture", "refund", "void", "get_transaction"]
+      rate_limit: "per gateway contract (Stripe: 100 req/s)"
+    - name: "monolith_payment_api"
+      allowed_operations: ["read_transaction", "write_parity_record"]
+      rate_limit: "internal -- no hard limit"
+
+  fallback_behavior: >
+    If microservice becomes unhealthy (health check fails 3 consecutive times),
+    traffic automatically routes back to monolith via load balancer. Alert
+    #payments-oncall. No manual intervention required for failover.
+
+
+# =============================================================================
+# 5. CANONICAL EXAMPLES
+# =============================================================================
+
+canonical_examples:
+  - name: "standard_charge"
+    description: "Normal credit card charge flows through microservice identically to monolith"
+    input:
+      endpoint: "POST /v1/payments/charge"
+      body:
+        amount: 4999
+        currency: "usd"
+        payment_method_id: "pm_test_visa"
+        idempotency_key: "idk_abc123"
+    expected_output:
+      status_code: 200
+      body:
+        id: "pay_*"
+        status: "succeeded"
+        amount: 4999
+    notes: "Response schema must be byte-identical to monolith for API contract compliance."
+
+  - name: "dual_write_verification"
+    description: "During dual-write, both systems record the transaction"
+    input:
+      endpoint: "POST /v1/payments/charge"
+      mode: "dual-write"
+    expected_output:
+      monolith_record: "exists with matching amount, status, timestamps"
+      microservice_record: "exists with matching amount, status, timestamps"
+      parity_check: "pass"
+    notes: "Parity checker compares records hourly. Any mismatch blocks cutover."
+
+  - name: "rollback_scenario"
+    description: "Microservice error triggers automatic rollback to monolith"
+    input:
+      trigger: "microservice health check fails 3x"
+    expected_output:
+      traffic_routing: "100% to monolith within 5 minutes"
+      in_flight_transactions: "completed by monolith, not dropped"
+      alert: "#payments-oncall PagerDuty incident created"
+    notes: "Rollback drills run weekly. If rollback takes > 5 min, migration is paused."
+
+
+# =============================================================================
+# OPERATIONAL METADATA
+# =============================================================================
+
+telemetry:
+  metrics:
+    - name: "dual_write_parity_mismatches"
+      description: "Count of records that differ between monolith and microservice"
+      alert_threshold: "> 0 (any mismatch is critical)"
+      dashboard: "grafana.internal/d/payments-migration"
+    - name: "payment_error_rate"
+      description: "Percentage of payment requests returning 5xx"
+      alert_threshold: "> 0.1% for 5 minutes"
+      dashboard: "grafana.internal/d/payments-health"
+    - name: "rollback_readiness"
+      description: "Time-to-rollback from last weekly drill"
+      alert_threshold: "> 5 minutes"
+      dashboard: "grafana.internal/d/payments-migration"
+  logging:
+    - "all payment API requests/responses (PAN redacted)"
+    - "dual-write parity check results"
+    - "rollback events with timestamps and trigger reason"
+
+decision_records:
+  - date: "2026-01-20"
+    decision: "14-day dual-write period instead of big-bang cutover"
+    rationale: "Previous migration (auth service, 2025) used big-bang and had a 4-hour outage. Dual-write lets us validate parity with live data before cutting over."
+    alternatives_considered:
+      - "Big-bang cutover -- rejected due to 2025 auth migration incident"
+      - "Shadow mode (read-only microservice) -- rejected because it doesn't test writes"
+
+  - date: "2026-02-05"
+    decision: "Same API contract, no breaking changes"
+    rationale: "47 internal and external clients depend on the payment API. Coordinating contract changes across all of them would delay migration by 2+ months."
+    alternatives_considered:
+      - "New v2 API with improved schema -- rejected to keep migration scope tight"
+
+versioning:
+  changelog:
+    - version: "1.0.0"
+      date: "2026-03-10"
+      changes: "Initial MVC for payment processing migration."
+  review_cadence: "weekly during dual-write phase, monthly after cutover"
+  deprecation_policy: "This MVC is retired after successful cutover and 30-day bake period."

@@ -1,0 +1,24 @@
+# Behavioral Test -- Happy Path
+# Returning user with history gets personalized recommendations.
+
+test_suite: behavioral
+feature: "Smart Recommendations"
+scenario: happy_path
+
+input:
+  user_id: "returning-user-042"
+  page_context: "home"
+  has_browse_history: true
+  has_purchase_history: true
+
+assertions:
+  - output is a list of exactly 5 items
+  - each item has sku, product_name, reason, confidence_score
+  - at least 1 reason references purchase history
+  - at least 1 reason references browsing behavior
+  - >= 3 unique product categories across 5 items
+  - no items currently in user's cart
+
+notes: >
+  This is the primary experience for the target persona. If this test
+  fails, the feature is broken for the majority of users.
