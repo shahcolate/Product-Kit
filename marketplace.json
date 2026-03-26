@@ -22,6 +22,12 @@
       "source": "./plugins/pm-interview-prep",
       "description": "PM interview coach — product sense, execution, estimation, and behavioral question coaching with JTBD-framed answers, structured decomposition, STAR format, mock interview mode, and anti-pattern detection.",
       "version": "1.0.0"
+    },
+    {
+      "name": "qa-tester",
+      "source": "./plugins/qa-tester",
+      "description": "Autonomous QA agent that navigates web apps like a real user, finds bugs using real testing methodology, and files them in Linear or JIRA with full reproduction steps. Runs in Claude Cowork.",
+      "version": "1.0.0"
     }
   ]
 }

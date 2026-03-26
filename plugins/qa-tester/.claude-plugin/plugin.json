@@ -1,0 +1,11 @@
+{
+  "name": "qa-tester",
+  "version": "1.0.0",
+  "description": "Autonomous QA agent that navigates web apps like a real user, finds bugs, and files them in Linear or JIRA with full reproduction steps.",
+  "skills": [
+    {
+      "name": "qa-tester",
+      "path": "./skills/qa-tester/SKILL.md"
+    }
+  ]
+}

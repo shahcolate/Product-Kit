@@ -31,6 +31,7 @@ ProductKit ships a **two-call LLM-as-judge eval harness**: every plugin has a te
 | **[Strategic PM](plugins/strategic-pm/README.md)** | Product Managers | PRDs, roadmaps, competitive analysis, user research, AI product playbook | ✅ Live |
 | **[Product Writing Studio](plugins/product-writing-studio/README.md)** | All roles | Exec comms, strategy memos, board decks, stakeholder emails | ✅ Live |
 | **[PM Interview Prep](plugins/pm-interview-prep/README.md)** | PMs (job seekers) | Mock interviews, structured answer coaching, product sense & execution questions | ✅ Live |
+| **[QA Tester](plugins/qa-tester/README.md)** | QA, Eng, PM | Autonomous browser-based QA — navigates, clicks, breaks things, files bugs in Linear/JIRA | ✅ Live |
 | **UX Strategy** | Designers | UX heuristics, design system thinking, usability audits, interaction patterns | 🔜 Coming soon |
 | **Metrics & Analytics** | PMs, Data, Eng | Dashboard design, metric trees, experiment analysis, statistical rigor checks | 📋 Planned |
 
@@ -112,6 +113,14 @@ Audience-First Protocol, Pyramid Principle enforcement, SCQA structuring, Clarit
 Mock interview mode with scoring rubrics, JTBD-framed product sense coaching, structured decomposition for estimation questions, STAR format behavioral coaching, and anti-pattern detection for common interview mistakes. Calibrated for FAANG, growth-stage, enterprise, and consumer companies.
 
 > [Full details and install guide](plugins/pm-interview-prep/README.md)
+
+### 🧪 QA Tester
+
+**Claude opens the browser and tests your app like a real QA engineer.**
+
+Discovery phase (asks about docs, recent changes, test scope), structured test plan with real methodology (boundary analysis, state transitions, error paths, exploratory testing), browser-based execution with screenshots, and automatic bug filing in Linear or JIRA with full reproduction steps. Runs in Claude Cowork.
+
+> [Full details and install guide](plugins/qa-tester/README.md)
 
 ---
 
@@ -318,10 +327,14 @@ Product-Kit/
 │   │   ├── README.md
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── skills/product-writing-studio/SKILL.md
-│   └── pm-interview-prep/                 # ✅ Live
+│   ├── pm-interview-prep/                 # ✅ Live
+│   │   ├── README.md
+│   │   ├── .claude-plugin/plugin.json
+│   │   └── skills/pm-interview-prep/SKILL.md
+│   └── qa-tester/                         # ✅ Live
 │       ├── README.md
 │       ├── .claude-plugin/plugin.json
-│       └── skills/pm-interview-prep/SKILL.md
+│       └── skills/qa-tester/SKILL.md
 ├── evals/
 │   ├── README.md                          # Eval methodology and how to run
 │   ├── strategic-pm/cases.json            # 12 behavioral eval cases
@@ -364,6 +377,7 @@ Product-Kit/
 | ✅ Live | **[Strategic PM](plugins/strategic-pm/README.md)** | PMs | Full-stack PM co-pilot with AI Playbook |
 | ✅ Live | **[Product Writing Studio](plugins/product-writing-studio/README.md)** | All roles | Exec comms, strategy memos, board decks, stakeholder emails |
 | ✅ Live | **[PM Interview Prep](plugins/pm-interview-prep/README.md)** | PMs | Mock interviews, structured answer coaching |
+| ✅ Live | **[QA Tester](plugins/qa-tester/README.md)** | QA, Eng, PM | Browser-based QA agent, files bugs in Linear/JIRA |
 | 🔜 Next | **UX Strategy** | Designers | Heuristics, usability audits, design system thinking |
 | 📋 Planned | **Metrics & Analytics** | PMs, Data, Eng | Metric trees, experiment analysis, dashboard design |
 | 💡 Exploring | **Research Ops** | Researchers, PMs | Automated user research synthesis with web search |
